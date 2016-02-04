@@ -55,42 +55,43 @@ void ctss_collect_stacks(CTSS_Synth *synth) {
     }
 }
 
-void ctss_update_mix_mono_i16(CTSS_Synth *synth, uint32_t frames,
-                              int16_t *out) {
+void ctss_update_mix_mono_i16(CTSS_Synth *synth, CTSS_Mixdown_I16 mixdown,
+                              uint32_t frames, int16_t *out) {
     for (uint32_t i = 0, num = frames / AUDIO_BUFFER_SIZE; i < num; i++) {
         ctss_update(synth);
-        ctss_mixdown_i16(synth->stackOutputs, &out[i * AUDIO_BUFFER_SIZE], 0,
-                         AUDIO_BUFFER_SIZE, synth->numStacks, 1);
+        mixdown(synth->stackOutputs, &out[i * AUDIO_BUFFER_SIZE], 0,
+                AUDIO_BUFFER_SIZE, synth->numStacks, 1);
     }
 }
 
-void ctss_update_mix_stereo_i16(CTSS_Synth *synth, uint32_t frames,
-                                int16_t *out) {
+void ctss_update_mix_stereo_i16(CTSS_Synth *synth, CTSS_Mixdown_I16 mixdown,
+                                uint32_t frames, int16_t *out) {
     for (uint32_t i = 0, num = frames / AUDIO_BUFFER_SIZE; i < num; i++) {
         ctss_update(synth);
-        ctss_mixdown_i16(synth->stackOutputs, &out[i * AUDIO_BUFFER_SIZE2], 0,
-                         AUDIO_BUFFER_SIZE, synth->numStacks, 2);
-        ctss_mixdown_i16(synth->stackOutputs, &out[i * AUDIO_BUFFER_SIZE2 + 1],
-                         1, AUDIO_BUFFER_SIZE, synth->numStacks, 2);
+        mixdown(synth->stackOutputs, &out[i * AUDIO_BUFFER_SIZE2], 0,
+                AUDIO_BUFFER_SIZE, synth->numStacks, 2);
+        mixdown(synth->stackOutputs, &out[i * AUDIO_BUFFER_SIZE2 + 1], 1,
+                AUDIO_BUFFER_SIZE, synth->numStacks, 2);
     }
 }
 
-void ctss_update_mix_mono_f32(CTSS_Synth *synth, uint32_t frames, float *out) {
+void ctss_update_mix_mono_f32(CTSS_Synth *synth, CTSS_Mixdown_F32 mixdown,
+                              uint32_t frames, float *out) {
     for (uint32_t i = 0, num = frames / AUDIO_BUFFER_SIZE; i < num; i++) {
         ctss_update(synth);
-        ctss_mixdown_f32(synth->stackOutputs, &out[i * AUDIO_BUFFER_SIZE], 0,
-                         AUDIO_BUFFER_SIZE, synth->numStacks, 1);
+        mixdown(synth->stackOutputs, &out[i * AUDIO_BUFFER_SIZE], 0,
+                AUDIO_BUFFER_SIZE, synth->numStacks, 1);
     }
 }
 
-void ctss_update_mix_stereo_f32(CTSS_Synth *synth, uint32_t frames,
-                                float *out) {
+void ctss_update_mix_stereo_f32(CTSS_Synth *synth, CTSS_Mixdown_F32 mixdown,
+                                uint32_t frames, float *out) {
     for (uint32_t i = 0, num = frames / AUDIO_BUFFER_SIZE; i < num; i++) {
         ctss_update(synth);
-        ctss_mixdown_f32(synth->stackOutputs, &out[i * AUDIO_BUFFER_SIZE2], 0,
-                         AUDIO_BUFFER_SIZE, synth->numStacks, 2);
-        ctss_mixdown_f32(synth->stackOutputs, &out[i * AUDIO_BUFFER_SIZE2 + 1],
-                         1, AUDIO_BUFFER_SIZE, synth->numStacks, 2);
+        mixdown(synth->stackOutputs, &out[i * AUDIO_BUFFER_SIZE2], 0,
+                AUDIO_BUFFER_SIZE, synth->numStacks, 2);
+        mixdown(synth->stackOutputs, &out[i * AUDIO_BUFFER_SIZE2 + 1], 1,
+                AUDIO_BUFFER_SIZE, synth->numStacks, 2);
     }
 }
 
@@ -201,6 +202,60 @@ void ctss_mixdown_i16(float **sources, int16_t *out, uint32_t offset,
     }
 }
 
+void ctss_mixdown_i16_3(float **sources, int16_t *out, uint32_t offset,
+                        uint32_t len, const uint8_t num, const uint8_t stride) {
+    while (len--) {
+        float sum = *(sources[0] + offset);
+        sum += *(sources[1] + offset);
+        sum += *(sources[2] + offset);
+        *out = ct_clamp16((int32_t)(sum * 32767.0f));
+        out += stride;
+        offset += stride;
+    }
+}
+
+void ctss_mixdown_i16_4(float **sources, int16_t *out, uint32_t offset,
+                        uint32_t len, const uint8_t num, const uint8_t stride) {
+    while (len--) {
+        float sum = *(sources[0] + offset);
+        sum += *(sources[1] + offset);
+        sum += *(sources[2] + offset);
+        sum += *(sources[3] + offset);
+        *out = ct_clamp16((int32_t)(sum * 32767.0f));
+        out += stride;
+        offset += stride;
+    }
+}
+
+void ctss_mixdown_i16_5(float **sources, int16_t *out, uint32_t offset,
+                        uint32_t len, const uint8_t num, const uint8_t stride) {
+    while (len--) {
+        float sum = *(sources[0] + offset);
+        sum += *(sources[1] + offset);
+        sum += *(sources[2] + offset);
+        sum += *(sources[3] + offset);
+        sum += *(sources[4] + offset);
+        *out = ct_clamp16((int32_t)(sum * 32767.0f));
+        out += stride;
+        offset += stride;
+    }
+}
+
+void ctss_mixdown_i16_6(float **sources, int16_t *out, uint32_t offset,
+                        uint32_t len, const uint8_t num, const uint8_t stride) {
+    while (len--) {
+        float sum = *(sources[0] + offset);
+        sum += *(sources[1] + offset);
+        sum += *(sources[2] + offset);
+        sum += *(sources[3] + offset);
+        sum += *(sources[4] + offset);
+        sum += *(sources[5] + offset);
+        *out = ct_clamp16((int32_t)(sum * 32767.0f));
+        out += stride;
+        offset += stride;
+    }
+}
+
 void ctss_mixdown_f32(float **sources, float *out, uint32_t offset,
                       uint32_t len, const uint8_t num, const uint8_t stride) {
     while (len--) {
@@ -209,6 +264,80 @@ void ctss_mixdown_f32(float **sources, float *out, uint32_t offset,
         while (n--) {
             sum += *(sources[n] + offset);
         }
+        if (sum < -1.0f) {
+            sum = -1.0f;
+        } else if (sum > 1.0f) {
+            sum = 1.0f;
+        }
+        *out = sum;
+        out += stride;
+        offset += stride;
+    }
+}
+
+void ctss_mixdown_f32_3(float **sources, float *out, uint32_t offset,
+                        uint32_t len, const uint8_t num, const uint8_t stride) {
+    while (len--) {
+        float sum = *(sources[0] + offset);
+        sum += *(sources[1] + offset);
+        sum += *(sources[2] + offset);
+        if (sum < -1.0f) {
+            sum = -1.0f;
+        } else if (sum > 1.0f) {
+            sum = 1.0f;
+        }
+        *out = sum;
+        out += stride;
+        offset += stride;
+    }
+}
+
+void ctss_mixdown_f32_4(float **sources, float *out, uint32_t offset,
+                        uint32_t len, const uint8_t num, const uint8_t stride) {
+    while (len--) {
+        float sum = *(sources[0] + offset);
+        sum += *(sources[1] + offset);
+        sum += *(sources[2] + offset);
+        sum += *(sources[3] + offset);
+        if (sum < -1.0f) {
+            sum = -1.0f;
+        } else if (sum > 1.0f) {
+            sum = 1.0f;
+        }
+        *out = sum;
+        out += stride;
+        offset += stride;
+    }
+}
+
+void ctss_mixdown_f32_5(float **sources, float *out, uint32_t offset,
+                        uint32_t len, const uint8_t num, const uint8_t stride) {
+    while (len--) {
+        float sum = *(sources[0] + offset);
+        sum += *(sources[1] + offset);
+        sum += *(sources[2] + offset);
+        sum += *(sources[3] + offset);
+        sum += *(sources[4] + offset);
+        if (sum < -1.0f) {
+            sum = -1.0f;
+        } else if (sum > 1.0f) {
+            sum = 1.0f;
+        }
+        *out = sum;
+        out += stride;
+        offset += stride;
+    }
+}
+
+void ctss_mixdown_f32_6(float **sources, float *out, uint32_t offset,
+                        uint32_t len, const uint8_t num, const uint8_t stride) {
+    while (len--) {
+        float sum = *(sources[0] + offset);
+        sum += *(sources[1] + offset);
+        sum += *(sources[2] + offset);
+        sum += *(sources[3] + offset);
+        sum += *(sources[4] + offset);
+        sum += *(sources[5] + offset);
         if (sum < -1.0f) {
             sum = -1.0f;
         } else if (sum > 1.0f) {

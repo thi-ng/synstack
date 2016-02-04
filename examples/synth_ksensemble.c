@@ -83,6 +83,7 @@ static int render_synth(const void *in, void *out, unsigned long frames,
         app->voiceID = (app->voiceID + 1) % app->synth.numStacks;
     }
 
-    ctss_update_mix_stereo_f32(&app->synth, frames, (float *)out);
+    ctss_update_mix_stereo_f32(&app->synth, ctss_mixdown_f32, frames,
+                               (float *)out);
     return 0;
 }
