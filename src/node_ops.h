@@ -40,12 +40,12 @@ CTSS_DSPNode *ctss_op4_const(char *id, CTSS_DSPNode *a, float af,
 CTSS_DSPNode *ctss_copy(char *id, CTSS_DSPNode *src, CTSS_DSPNode *dest);
 
 uint8_t ctss_process_sum(CTSS_DSPNode *node, CTSS_DSPStack *stack,
-                         CTSS_Synth *synth, uint32_t offset);
+                         CTSS_Synth *synth);
 uint8_t ctss_process_mult(CTSS_DSPNode *node, CTSS_DSPStack *stack,
-                          CTSS_Synth *synth, uint32_t offset);
+                          CTSS_Synth *synth);
 uint8_t ctss_process_madd(CTSS_DSPNode *node, CTSS_DSPStack *stack,
-                          CTSS_Synth *synth, uint32_t offset);
+                          CTSS_Synth *synth);
 uint8_t ctss_process_copy(CTSS_DSPNode *node, CTSS_DSPStack *stack,
-                          CTSS_Synth *synth, uint32_t offset);
+                          CTSS_Synth *synth);
 uint8_t ctss_process_madd_const(CTSS_DSPNode *node, CTSS_DSPStack *stack,
-                                CTSS_Synth *synth, uint32_t offset);
+                                CTSS_Synth *synth);

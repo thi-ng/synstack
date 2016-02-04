@@ -48,7 +48,7 @@ typedef struct CTSS_DSPStack CTSS_DSPStack;
 typedef struct CTSS_Synth CTSS_Synth;
 
 typedef uint8_t (*CTSS_DSPNodeHandler)(CTSS_DSPNode *node, CTSS_DSPStack *stack,
-                                       CTSS_Synth *synth, uint32_t offset);
+                                       CTSS_Synth *synth);
 
 typedef void *CTSS_DSPState;
 
@@ -100,8 +100,7 @@ CTSS_DSPNode *ctss_node(char *id, uint8_t channels);
 void ctss_free_node_state(CTSS_DSPNode *node);
 
 void ctss_activate_stack(CTSS_DSPStack *stack);
-void ctss_process_stack(CTSS_DSPStack *stack, CTSS_Synth *synth,
-                        uint32_t offset);
+void ctss_process_stack(CTSS_DSPStack *stack, CTSS_Synth *synth);
 void ctss_stack_append(CTSS_DSPStack *stack, CTSS_DSPNode *node);
 CTSS_DSPNode *ctss_stack_last_node(CTSS_DSPStack *stack);
 CTSS_DSPNode *ctss_node_for_id(CTSS_DSPStack *stack, const char *id);

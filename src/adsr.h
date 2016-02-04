@@ -25,7 +25,7 @@ CTSS_DSPNode *ctss_adsr(char *id, CTSS_DSPNode *lfo, float attTime,
                         float decayTime, float releaseTime, float attGain,
                         float sustainGain);
 uint8_t ctss_process_adsr(CTSS_DSPNode *node, CTSS_DSPStack *stack,
-                          CTSS_Synth *synth, uint32_t offset);
+                          CTSS_Synth *synth);
 void ctss_configure_adsr(CTSS_DSPNode *node, float attTime, float decayTime,
                          float releaseTime, float attGain, float sustainGain);
 void ctss_reset_adsr(CTSS_DSPNode *node);

@@ -12,4 +12,4 @@ CTSS_DSPNode *ctss_foldback(char *id, CTSS_DSPNode *src, float threshold,
                             float amp);
 
 uint8_t ctss_process_foldback(CTSS_DSPNode *node, CTSS_DSPStack *stack,
-                              CTSS_Synth *synth, uint32_t offset);
+                              CTSS_Synth *synth);

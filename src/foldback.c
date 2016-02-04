@@ -15,7 +15,7 @@ CTSS_DSPNode *ctss_foldback(char *id, CTSS_DSPNode *src, float threshold,
 }
 
 uint8_t ctss_process_foldback(CTSS_DSPNode *node, CTSS_DSPStack *stack,
-                              CTSS_Synth *synth, uint32_t offset) {
+                              CTSS_Synth *synth) {
     CT_UNUSED(synth);
     CT_UNUSED(stack);
     CTSS_FoldbackState *state = (CTSS_FoldbackState *)(node->state);

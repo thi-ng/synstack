@@ -19,15 +19,15 @@ CTSS_DSPNode *ctss_filter_4pole(char *id, CTSS_DSPNode *src, CTSS_DSPNode *lfo,
 }
 
 uint8_t ctss_process_4pole(CTSS_DSPNode *node, CTSS_DSPStack *stack,
-                              CTSS_Synth *synth, uint32_t offset) {
+                           CTSS_Synth *synth) {
     CT_UNUSED(synth);
     CT_UNUSED(stack);
     CTSS_Filter4PoleState *state = (CTSS_Filter4PoleState *)(node->state);
-    float *src = state->src + offset;
-    float *lfo = state->lfo + offset;
+    float *src = state->src;
+    float *lfo = state->lfo;
     float *buf = &node->buf[0];
     float f0 = state->cutoffCoeff * state->cutoffFreq * INV_NYQUIST_FREQ;
-    uint32_t len = AUDIO_BUFFER_SIZE - offset;
+    uint32_t len = AUDIO_BUFFER_SIZE;
     while (len--) {
         float f = f0; // * (*lfo++);
         if (f > 1.0f) {

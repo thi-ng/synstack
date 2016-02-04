@@ -101,14 +101,14 @@ void ctss_calculate_biquad_coeff(CTSS_DSPNode *node, CTSS_BiquadType type,
 }
 
 uint8_t ctss_process_biquad(CTSS_DSPNode *node, CTSS_DSPStack *stack,
-                            CTSS_Synth *synth, uint32_t offset) {
+                            CTSS_Synth *synth) {
     CT_UNUSED(synth);
     CT_UNUSED(stack);
     CTSS_BiquadState *state = (CTSS_BiquadState *)node->state;
-    const float *src = state->src + offset;
-    float *buf = node->buf + offset;
+    const float *src = state->src;
+    float *buf = node->buf;
     float *f = state->f;
-    uint32_t len = AUDIO_BUFFER_SIZE - offset;
+    uint32_t len = AUDIO_BUFFER_SIZE;
     while (len--) {
         float input = *src++;
         float x = f[0] * input + f[1] * f[5] + f[2] * f[6] - f[3] * f[7] -

@@ -15,7 +15,7 @@ CTSS_DSPNode *ctss_panning(char *id, CTSS_DSPNode *src, CTSS_DSPNode *lfo,
 }
 
 uint8_t ctss_process_panning(CTSS_DSPNode *node, CTSS_DSPStack *stack,
-                             CTSS_Synth *synth, uint32_t offset) {
+                             CTSS_Synth *synth) {
     CT_UNUSED(synth);
     CT_UNUSED(stack);
     CTSS_PanningState *state = (CTSS_PanningState *)(node->state);

@@ -24,4 +24,4 @@ CTSS_DSPNode *ctss_filter_biquad(char *id, CTSS_BiquadType type,
 void ctss_calculate_biquad_coeff(CTSS_DSPNode *node, CTSS_BiquadType type,
                                  float freq, float dbGain, float bandwidth);
 uint8_t ctss_process_biquad(CTSS_DSPNode *node, CTSS_DSPStack *stack,
-                            CTSS_Synth *synth, uint32_t offset);
+                            CTSS_Synth *synth);

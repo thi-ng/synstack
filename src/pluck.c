@@ -31,18 +31,18 @@ void ctss_reset_pluck(CTSS_DSPNode *node, float freq, float impTime,
 }
 
 uint8_t ctss_process_pluck(CTSS_DSPNode *node, CTSS_DSPStack *stack,
-                           CTSS_Synth *synth, uint32_t offset) {
+                           CTSS_Synth *synth) {
     CT_UNUSED(synth);
     CT_UNUSED(stack);
     CTSS_PluckOsc *state = (CTSS_PluckOsc *)node->state;
     float *acc = state->acc;
-    float *buf = node->buf + offset;
+    float *buf = node->buf;
     int32_t impulse = state->impulse;
     uint16_t n = state->phase;
     const uint16_t alen = state->len;
     const float ca = state->smoothA;
     const float cb = state->smoothB;
-    uint32_t len = AUDIO_BUFFER_SIZE - offset;
+    uint32_t len = AUDIO_BUFFER_SIZE;
     while (len--) {
         float xn;
         if (impulse >= 0) {

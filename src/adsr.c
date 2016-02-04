@@ -32,16 +32,15 @@ void ctss_reset_adsr(CTSS_DSPNode *node) {
 }
 
 uint8_t ctss_process_adsr(CTSS_DSPNode *node, CTSS_DSPStack *stack,
-                          CTSS_Synth *synth, uint32_t offset) {
+                          CTSS_Synth *synth) {
     CT_UNUSED(synth);
     CT_UNUSED(stack);
     CTSS_ADSRState *state = (CTSS_ADSRState *)(node->state);
-    float *buf = node->buf + offset;
+    float *buf = node->buf;
     float *envMod = state->lfo;
     // CTSS_ADSRPhase prevPhase = state->phase;
-    uint32_t len = AUDIO_BUFFER_SIZE - offset;
+    uint32_t len = AUDIO_BUFFER_SIZE;
     if (envMod != NULL) {
-        envMod += offset;
         while (len--) {
             switch (state->phase) {
             case ATTACK:

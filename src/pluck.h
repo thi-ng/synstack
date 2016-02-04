@@ -25,4 +25,4 @@ void ctss_reset_pluck(CTSS_DSPNode *node, float freq, float impTime,
                       float coeff);
 
 uint8_t ctss_process_pluck(CTSS_DSPNode *node, CTSS_DSPStack *stack,
-                           CTSS_Synth *synth, uint32_t offset);
+                           CTSS_Synth *synth);

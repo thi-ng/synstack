@@ -21,7 +21,7 @@ CTSS_DSPNode *ctss_filter_iir(char *id, CTSS_IIRType type, CTSS_DSPNode *src,
 void ctss_calculate_iir_coeff(CTSS_DSPNode *node, float cutoff, float reso);
 
 uint8_t ctss_process_iir(CTSS_DSPNode *node, CTSS_DSPStack *stack,
-                         CTSS_Synth *synth, uint32_t offset);
+                         CTSS_Synth *synth);
 
 float ctss_bassboost(float x, const float sel, const float amp,
                      const float wet);

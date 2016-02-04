@@ -30,17 +30,17 @@ void ctss_calculate_iir_coeff(CTSS_DSPNode *node, float cutoff, float reso) {
 }
 
 uint8_t ctss_process_iir(CTSS_DSPNode *node, CTSS_DSPStack *stack,
-                         CTSS_Synth *synth, uint32_t offset) {
+                         CTSS_Synth *synth) {
     CT_UNUSED(synth);
     CT_UNUSED(stack);
     CTSS_IIRState *state = (CTSS_IIRState *)node->state;
-    const float *src = state->src + offset;
-    const float *lfo = state->lfo + offset;
-    float *buf = node->buf + offset;
+    const float *src = state->src;
+    const float *lfo = state->lfo;
+    float *buf = node->buf;
     float *f = state->f;
     float damp = state->damp;
     float freq = state->freq;
-    uint32_t len = AUDIO_BUFFER_SIZE - offset;
+    uint32_t len = AUDIO_BUFFER_SIZE;
     while (len--) {
         float input = *src++;
 

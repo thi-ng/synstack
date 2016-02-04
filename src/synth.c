@@ -139,14 +139,13 @@ void ctss_stack_append(CTSS_DSPStack *stack, CTSS_DSPNode *node) {
     }
 }
 
-void ctss_process_stack(CTSS_DSPStack *stack, CTSS_Synth *synth,
-                        uint32_t offset) {
+void ctss_process_stack(CTSS_DSPStack *stack, CTSS_Synth *synth) {
     if (stack->flags & STACK_ACTIVE) {
         CTSS_DSPNode *node = stack->startNode;
         uint8_t flags = 0;
         while (1) {
             if (node->flags & NODE_ACTIVE) {
-                flags |= node->handler(node, stack, synth, offset);
+                flags |= node->handler(node, stack, synth);
                 if (node->next == NULL) {
                     break;
                 }
@@ -178,12 +177,12 @@ void ctss_trace_stack(CTSS_DSPStack *stack) {
 
 void ctss_update(CTSS_Synth *synth) {
     for (uint8_t i = 0; i < synth->numLFO; i++) {
-        synth->lfo[i]->handler(synth->lfo[i], NULL, synth, 0);
+        synth->lfo[i]->handler(synth->lfo[i], NULL, synth);
     }
     CTSS_DSPStack *s = synth->stacks;
     for (uint8_t i = synth->numStacks; i > 0; i--, s++) {
         if (s->flags & STACK_ACTIVE) {
-            ctss_process_stack(s, synth, 0);
+            ctss_process_stack(s, synth);
         }
     }
 }

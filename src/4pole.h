@@ -16,4 +16,4 @@ CTSS_DSPNode *ctss_filter_4pole(char *id, CTSS_DSPNode *src, CTSS_DSPNode *lfo,
                                 float cutoff, float reso, float coeff);
 
 uint8_t ctss_process_4pole(CTSS_DSPNode *node, CTSS_DSPStack *stack,
-                              CTSS_Synth *synth, uint32_t offset);
+                           CTSS_Synth *synth);
