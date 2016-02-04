@@ -51,7 +51,7 @@ uint8_t ctss_process_osc_sin(CTSS_DSPNode *node, CTSS_DSPStack *stack,
         phase +=
             freq + (*lfo++ * state->lfoDepth); // + (*env++ * state->envDepth);
         TRUNC_PHASE(phase);
-        *buf++ = state->dcOffset + ct_fast_sin(phase) * state->gain;
+        *buf++ = state->dcOffset + ctss_fast_sin(phase) * state->gain;
     }
     state->phase = phase;
     return 0;
@@ -115,7 +115,7 @@ uint8_t ctss_process_osc_tri(CTSS_DSPNode *node, CTSS_DSPStack *stack,
             freq + (*lfo++ * state->lfoDepth); // + (*env++ * state->envDepth);
         TRUNC_PHASE(phase);
         float x = 2.0f - (phase * INV_HALF_PI);
-        x = 1.0f - ct_stepf(x, 0.0f, -x, x);
+        x = 1.0f - ctss_stepf(x, 0.0f, -x, x);
         if (x > -1.0f) {
             *buf++ = x * state->gain + state->dcOffset;
         } else {
@@ -142,7 +142,7 @@ uint8_t ctss_process_osc_sawsin(CTSS_DSPNode *node, CTSS_DSPStack *stack,
             freq + (*lfo++ * state->lfoDepth); // + (*env++ * state->envDepth);
         TRUNC_PHASE(phase);
         *buf++ = state->dcOffset +
-                 ((phase > PI) ? -ct_fast_sin(phase) : (phase * INV_PI - 1)) *
+                 ((phase > PI) ? -ctss_fast_sin(phase) : (phase * INV_PI - 1)) *
                      state->gain;
     }
     state->phase = phase;
@@ -178,7 +178,7 @@ float ctss_osc_pblep_pwm(float t, const float dt, const float lfo) {
 }
 
 float ctss_osc_pblep_spiral(float t, const float dt, const float lfo) {
-    return ct_fast_cos(lfo * t * TAU) * t;
+    return ctss_fast_cos(lfo * t * TAU) * t;
 }
 
 uint8_t ctss_process_osc_pblep(CTSS_DSPNode *node, CTSS_DSPStack *stack,
@@ -196,7 +196,7 @@ uint8_t ctss_process_osc_pblep(CTSS_DSPNode *node, CTSS_DSPStack *stack,
         phase += freq;
         // TRUNC_NORM(phase);
         phase -= (float)((int32_t)phase);
-        *buf++ = (fn(phase, freq, *lfo++) - ct_poly_blep(phase, freq)) *
+        *buf++ = (fn(phase, freq, *lfo++) - ctss_poly_blep(phase, freq)) *
                      state->gain +
                  state->dcOffset;
     }
@@ -204,4 +204,4 @@ uint8_t ctss_process_osc_pblep(CTSS_DSPNode *node, CTSS_DSPStack *stack,
     return 0;
 }
 
-PBLEP_OSC(ctss_process_osc_spiral, ct_fast_cos(*lfo++ *phase *TAU) * phase);
+PBLEP_OSC(ctss_process_osc_spiral, ctss_fast_cos(*lfo++ *phase *TAU) * phase);

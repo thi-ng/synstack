@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <stdio.h>
-#include "ct_math.h"
+#include "ctss_math.h"
 
 #ifndef AUDIO_BUFFER_SIZE
 #define AUDIO_BUFFER_SIZE 32

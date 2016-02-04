@@ -39,7 +39,7 @@ static void init_voice(CTSS_Synth *synth, CTSS_DSPStack *stack, float freq) {
         ctss_osc_formant_id("osc1", 0, freq, 0.15f, 0.0f, 0.001f);
     CTSS_DSPNode *sum = ctss_op2("sum", osc1, env, ctss_process_mult);
     CTSS_DSPNode *filter = ctss_filter_iir("filter", IIR_HP, sum, NULL,
-                                           ct_randf(300.0f, 1200.0f), 0.8f);
+                                           ctss_randf(300.0f, 1200.0f), 0.8f);
     CTSS_DSPNode *delay =
         ctss_delay("delay", filter, (uint32_t)(SAMPLE_RATE * 3 / 8), 0.0f, 1);
     CTSS_DSPNode *nodes[] = {env, osc1, sum, filter, delay};
@@ -60,7 +60,7 @@ static int render_synth(const void *in, void *out, unsigned long frames,
         osc->freq = HZ_TO_RAD(freq);
         ctss_set_formant_id(NODE_ID(s, "osc1"), rand() % 9);
         ctss_calculate_iir_coeff(NODE_ID(s, "filter"),
-                                 ct_randf(300.0f, 5000.0f), 0.7f);
+                                 ctss_randf(300.0f, 5000.0f), 0.7f);
         ctss_activate_stack(s);
         app->noteID++;
         app->voiceID = (app->voiceID + 1) % app->synth.numStacks;

@@ -65,7 +65,7 @@ static int render_synth(const void *in, void *out, unsigned long frames,
         freq *= pitch[rand() % 3];
         NODE_ID_STATE(CTSS_OscState, s, "osc1")->freq = HZ_TO_RAD(freq);
         NODE_ID_STATE(CTSS_OscState, s, "osc2")->freq = HZ_TO_RAD(freq * 1.01f);
-        NODE_ID_STATE(CTSS_PanningState, s, "pan")->pos = ct_randf(0.0f, 1.0f);
+        NODE_ID_STATE(CTSS_PanningState, s, "pan")->pos = ctss_randf(0.0f, 1.0f);
         ctss_activate_stack(s);
         app->noteID++;
         app->voiceID = (app->voiceID + 1) % app->synth.numStacks;
@@ -77,7 +77,7 @@ static int render_synth(const void *in, void *out, unsigned long frames,
         ctss_reset_adsr(NODE_ID(s, "env"));
         NODE_ID_STATE(CTSS_OscState, s, "osc1")->freq = HZ_TO_RAD(freq);
         NODE_ID_STATE(CTSS_OscState, s, "osc2")->freq = HZ_TO_RAD(freq * 1.01f);
-        NODE_ID_STATE(CTSS_PanningState, s, "pan")->pos = ct_randf(0.0f, 1.0f);
+        NODE_ID_STATE(CTSS_PanningState, s, "pan")->pos = ctss_randf(0.0f, 1.0f);
         ctss_activate_stack(s);
         app->noteID++;
         app->voiceID = (app->voiceID + 1) % app->synth.numStacks;

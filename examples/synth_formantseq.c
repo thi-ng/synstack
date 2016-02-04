@@ -82,22 +82,22 @@ static int render_synth(const void *in, void *out, unsigned long frames,
             osc2->freq = HZ_TO_RAD(freq2);
             NODE_ID_STATE(CTSS_OscState, s, "osc2imp")->phase = 0;
             // for (int i = 0; i < 4; i++) {
-            //    formant[i] = ct_randf(110, 4400);
-            //    formant[i + 4] = ct_randf(0.1f, 2.0f);
+            //    formant[i] = ctss_randf(110, 4400);
+            //    formant[i + 4] = ctss_randf(0.1f, 2.0f);
             //}
             ctss_set_formant_id(NODE_ID(s, "osc1"), rand() % 9);
             // ctss_calculate_iir_coeff(NODE_ID(s, "filter"),
-            //                             ct_randf(300.0f, 2400.0f),
-            //                             ct_randf(0.0f,
+            //                             ctss_randf(300.0f, 2400.0f),
+            //                             ctss_randf(0.0f,
             //                             0.73f));
             ctss_calculate_biquad_coeff(NODE_ID(s, "filter"), PEQ,
-                                        // ct_randf(800.0f, 8000.0f),
+                                        // ctss_randf(800.0f, 8000.0f),
                                         2400.0f + sinf(time * 0.3f) * 2320.0f,
-                                        -60.0f, ct_randf(0.02f, 0.1f));
+                                        -60.0f, ctss_randf(0.02f, 0.1f));
             ctss_calculate_biquad_coeff(NODE_ID(s, "filter2"), HPF,
-                                        // ct_randf(800.0f, 8000.0f),
+                                        // ctss_randf(800.0f, 8000.0f),
                                         1600.0f + sinf(time * 0.25f) * 1500.0f,
-                                        -60.0f, ct_randf(0.25f, 2.0f));
+                                        -60.0f, ctss_randf(0.25f, 2.0f));
             ctss_activate_stack(s);
             app->noteID++;
             app->voiceID = (app->voiceID + 1) % app->synth.numStacks;

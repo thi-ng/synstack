@@ -66,8 +66,6 @@ CC = $(CC_PREFIX)-gcc
 AR = $(CC_PREFIX)-ar
 OBJCOPY = $(CC_PREFIX)-objcopy
 LDFLAGS += -nostartfiles
-SOURCES += $(SRC_DIR)/ct_math.c
-OBJS += $(BUILD_DIR)/ct_math.o
 endif
 
 ifeq (stm32f4, $(platform))
@@ -76,7 +74,7 @@ CFLAGS += -mthumb -mcpu=cortex-m4 -mfloat-abi=hard -mfpu=fpv4-sp-d16
 LDFLAGS += -mthumb -mcpu=cortex-m4 -mfloat-abi=hard -mfpu=fpv4-sp-d16
 else ifeq (stm32f7, $(platform))
 DEFINES += -DSTM32F746xx
-CFLAGS += -mthumb -mcpu=cortex-m7 -mfloat-abi=hard -mfpu=fpv5-sp-d16
+CFLAGS += -mthumb -mcpu=cortex-m7 -mfloat-abi=hard -mfpu=fpv5-sp-d16 -Wa,-adhlns="$@.lst"
 LDFLAGS += -mthumb -mcpu=cortex-m4 -mfloat-abi=hard -mfpu=fpv4-sp-d16
 endif
 
@@ -85,15 +83,17 @@ DEFINES += -DDEBUG
 CFLAGS += -g3
 else ifeq (release, $(config))
 DEFINES += -DNDEBUG
-CFLAGS += -O2
+CFLAGS += -Os
 endif
 
 CFLAGS += $(WARN) $(DEFINES)
 LIB_CMD = $(AR) -rcs "$@" $(OBJS)
 
-all: prologue $(BUILD_DIR) $(LIB_DIR) $(TARGET) epilogue
+all: lib examples
 
-examples: all $(EX_BIN_DIR) $(EX_OBJS)
+lib: prologue $(BUILD_DIR) $(LIB_DIR) $(TARGET) epilogue
+
+examples: lib $(EX_BIN_DIR) $(EX_OBJS)
 
 prologue:
 	@echo "==== Building target: $(TARGET) ===="
@@ -136,4 +136,4 @@ $(EX_BIN_DIR)/%: $(EX_SOURCES) $(EX_DIR)/demo_common.c $(EX_DIR)/demo_common.h
 	@echo "=== Compiling example: $(notdir $@)"
 	$(CC) $(CFLAGS) -I$(EX_DIR) -L$(LIB_DIR) $(LDFLAGS) -o $@ $(EX_DIR)/$(notdir $@).c $(EX_DIR)/demo_common.c
 
-.PHONY: all examples clean prologue epilogue
+.PHONY: all lib examples clean prologue epilogue

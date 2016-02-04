@@ -56,8 +56,8 @@ static int render_synth(const void *in, void *out, unsigned long frames,
         ctss_reset_adsr(NODE_ID(s, "env"));
         freq *= pitch[rand() % 3];
         ctss_reset_pluck(NODE_ID(s, "osc1"), freq, 0.01f,
-                         ct_randf(0.05f, 0.95f));
-        NODE_ID_STATE(CTSS_PluckOsc, s, "osc1")->gain = ct_randf(0.15f, 0.7f);
+                         ctss_randf(0.05f, 0.95f));
+        NODE_ID_STATE(CTSS_PluckOsc, s, "osc1")->gain = ctss_randf(0.15f, 0.7f);
         ctss_calculate_iir_coeff(NODE_ID(s, "filter"), 18000.0f, 0.1f);
         ctss_activate_stack(s);
         app->noteID++;
@@ -69,11 +69,11 @@ static int render_synth(const void *in, void *out, unsigned long frames,
         CTSS_DSPStack *s = &app->synth.stacks[app->voiceID];
         ctss_reset_adsr(NODE_ID(s, "env"));
         ctss_reset_pluck(NODE_ID(s, "osc1"), freq, 0.001f,
-                         ct_randf(0.05f, 0.95f));
-        NODE_ID_STATE(CTSS_PluckOsc, s, "osc1")->gain = ct_randf(0.6f, 0.9f);
+                         ctss_randf(0.05f, 0.95f));
+        NODE_ID_STATE(CTSS_PluckOsc, s, "osc1")->gain = ctss_randf(0.6f, 0.9f);
         ctss_calculate_iir_coeff(NODE_ID(s, "filter"),
-                                 freq * ct_randf(0.9f, 1.9f),
-                                 ct_randf(0.0f, 0.6f));
+                                 freq * ctss_randf(0.9f, 1.9f),
+                                 ctss_randf(0.0f, 0.6f));
         ctss_activate_stack(s);
         app->noteID++;
         app->voiceID = (app->voiceID + 1) % app->synth.numStacks;

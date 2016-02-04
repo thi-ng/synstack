@@ -47,8 +47,8 @@ uint8_t ctss_process_pluck(CTSS_DSPNode *node, CTSS_DSPStack *stack,
         float xn;
         if (impulse >= 0) {
             impulse--;
-            xn = (ct_normrandf() * (1.0f - state->variation) +
-                  ct_normrandf() * state->variation) *
+            xn = (ctss_normrandf() * (1.0f - state->variation) +
+                  ctss_normrandf() * state->variation) *
                  state->gain;
             state->lastImp += (xn - state->lastImp) * state->damping;
             xn = state->lastImp;

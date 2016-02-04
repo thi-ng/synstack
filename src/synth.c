@@ -196,7 +196,7 @@ void ctss_mixdown_i16(float **sources, int16_t *out, uint32_t offset,
         while (n--) {
             sum += *(sources[n] + offset);
         }
-        *out = ct_clamp16((int32_t)(sum * 32767.0f));
+        *out = ctss_clamp16((int32_t)(sum * 32767.0f));
         out += stride;
         offset += stride;
     }
@@ -208,7 +208,7 @@ void ctss_mixdown_i16_3(float **sources, int16_t *out, uint32_t offset,
         float sum = *(sources[0] + offset);
         sum += *(sources[1] + offset);
         sum += *(sources[2] + offset);
-        *out = ct_clamp16((int32_t)(sum * 32767.0f));
+        *out = ctss_clamp16((int32_t)(sum * 32767.0f));
         out += stride;
         offset += stride;
     }
@@ -221,7 +221,7 @@ void ctss_mixdown_i16_4(float **sources, int16_t *out, uint32_t offset,
         sum += *(sources[1] + offset);
         sum += *(sources[2] + offset);
         sum += *(sources[3] + offset);
-        *out = ct_clamp16((int32_t)(sum * 32767.0f));
+        *out = ctss_clamp16((int32_t)(sum * 32767.0f));
         out += stride;
         offset += stride;
     }
@@ -235,7 +235,7 @@ void ctss_mixdown_i16_5(float **sources, int16_t *out, uint32_t offset,
         sum += *(sources[2] + offset);
         sum += *(sources[3] + offset);
         sum += *(sources[4] + offset);
-        *out = ct_clamp16((int32_t)(sum * 32767.0f));
+        *out = ctss_clamp16((int32_t)(sum * 32767.0f));
         out += stride;
         offset += stride;
     }
@@ -250,7 +250,7 @@ void ctss_mixdown_i16_6(float **sources, int16_t *out, uint32_t offset,
         sum += *(sources[3] + offset);
         sum += *(sources[4] + offset);
         sum += *(sources[5] + offset);
-        *out = ct_clamp16((int32_t)(sum * 32767.0f));
+        *out = ctss_clamp16((int32_t)(sum * 32767.0f));
         out += stride;
         offset += stride;
     }

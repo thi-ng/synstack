@@ -51,7 +51,7 @@ static void init_voice(CTSS_Synth *synth, CTSS_DSPStack *stack, float freq) {
         ctss_op4("sum", osc1, env, osc2, env, ctss_process_madd);
     CTSS_DSPNode *gate = ctss_op2("gate", sum, lfo2, ctss_process_mult);
     // CTSS_DSPNode *filter = ctss_filter_iir("filter", IIR_LP, gate, NULL,
-    // ct_randf(300.0f, 1200.0f),
+    // ctss_randf(300.0f, 1200.0f),
     //                  0.85f);
     CTSS_DSPNode *filter = ctss_filter_formant("filter", rand() % 5, gate);
     CTSS_DSPNode *delay =

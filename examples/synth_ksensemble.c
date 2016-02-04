@@ -55,13 +55,13 @@ static int render_synth(const void *in, void *out, unsigned long frames,
         CTSS_DSPStack *s = &app->synth.stacks[app->voiceID];
         ctss_reset_adsr(NODE_ID(s, "env"));
         freq *= pitch[rand() % 3];
-        ctss_reset_pluck(NODE_ID(s, "osc1"), freq, ct_randf(0.001f, 0.05f),
-                         ct_randf(0.05f, 0.95f));
+        ctss_reset_pluck(NODE_ID(s, "osc1"), freq, ctss_randf(0.001f, 0.05f),
+                         ctss_randf(0.05f, 0.95f));
         CTSS_PluckOsc *osc = NODE_ID_STATE(CTSS_PluckOsc, s, "osc1");
-        osc->gain = ct_randf(0.15f, 0.6f);
-        osc->damping = ct_randf(0.2f, 0.5f);
+        osc->gain = ctss_randf(0.15f, 0.6f);
+        osc->damping = ctss_randf(0.2f, 0.5f);
         osc->variation = 0.5f;
-        NODE_ID_STATE(CTSS_PanningState, s, "pan")->pos = ct_randf(0.0f, 1.0f);
+        NODE_ID_STATE(CTSS_PanningState, s, "pan")->pos = ctss_randf(0.0f, 1.0f);
         ctss_activate_stack(s);
         app->noteID++;
         app->voiceID = (app->voiceID + 1) % app->synth.numStacks;
@@ -71,13 +71,13 @@ static int render_synth(const void *in, void *out, unsigned long frames,
         float freq = ctss_notes[scale[7 - app->noteID % 8] + app->pitch + 7];
         CTSS_DSPStack *s = &app->synth.stacks[app->voiceID];
         ctss_reset_adsr(NODE_ID(s, "env"));
-        ctss_reset_pluck(NODE_ID(s, "osc1"), freq, ct_randf(0.005f, 0.05f),
-                         ct_randf(0.05f, 0.95f));
+        ctss_reset_pluck(NODE_ID(s, "osc1"), freq, ctss_randf(0.005f, 0.05f),
+                         ctss_randf(0.05f, 0.95f));
         CTSS_PluckOsc *osc = NODE_ID_STATE(CTSS_PluckOsc, s, "osc1");
-        osc->gain = ct_randf(0.05f, 0.4f) * 1.5f;
-        osc->damping = ct_randf(0.1f, 0.9f);
+        osc->gain = ctss_randf(0.05f, 0.4f) * 1.5f;
+        osc->damping = ctss_randf(0.1f, 0.9f);
         osc->variation = 0.5f;
-        NODE_ID_STATE(CTSS_PanningState, s, "pan")->pos = ct_randf(0.0f, 1.0f);
+        NODE_ID_STATE(CTSS_PanningState, s, "pan")->pos = ctss_randf(0.0f, 1.0f);
         ctss_activate_stack(s);
         app->noteID++;
         app->voiceID = (app->voiceID + 1) % app->synth.numStacks;

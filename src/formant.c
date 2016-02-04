@@ -107,7 +107,7 @@ static float calc_formant(const float p, const float I) {
     float phi = 0.0f;
     for (int h = 1; h < hmax; h++) {
         phi += PI * p;
-        float hann = 0.5f + 0.5f * ct_norm_cos(h * ih);
+        float hann = 0.5f + 0.5f * ctss_norm_cos(h * ih);
         float gauss = 0.85f * expf(-h * h / (I * I));
         a += hann * (gauss + 0.15f) * cosf(phi);
     }
@@ -132,8 +132,8 @@ static float lookup_formant(const float p, float w) {
 static float formant_carrier(const float h, const float p) {
     const float h0 = floorf(h);
     const float hf = h - h0;
-    const float c0 = ct_norm_cos(fmodf(p * h0 + 1001.f, 2.0f) - 1.0f);
-    const float c1 = ct_norm_cos(fmodf(p * (h0 + 1.0f) + 1001.f, 2.0f) - 1.0f);
+    const float c0 = ctss_norm_cos(fmodf(p * h0 + 1001.f, 2.0f) - 1.0f);
+    const float c1 = ctss_norm_cos(fmodf(p * (h0 + 1.0f) + 1001.f, 2.0f) - 1.0f);
     return c0 + hf * (c1 - c0);
 }
 
