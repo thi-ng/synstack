@@ -69,8 +69,8 @@ CTSS_DSPNode *ctss_copy(char *id, CTSS_DSPNode *src, CTSS_DSPNode *dest) {
 
 uint8_t ctss_process_mult(CTSS_DSPNode *node, CTSS_DSPStack *stack,
                           CTSS_Synth *synth) {
-    CT_UNUSED(synth);
-    CT_UNUSED(stack);
+    CTSS_UNUSED(synth);
+    CTSS_UNUSED(stack);
     CTSS_NodeOp2State *state = (CTSS_NodeOp2State *)(node->state);
     const float *a = state->bufA;
     float *b = state->bufB;
@@ -84,8 +84,8 @@ uint8_t ctss_process_mult(CTSS_DSPNode *node, CTSS_DSPStack *stack,
 
 uint8_t ctss_process_sum(CTSS_DSPNode *node, CTSS_DSPStack *stack,
                          CTSS_Synth *synth) {
-    CT_UNUSED(synth);
-    CT_UNUSED(stack);
+    CTSS_UNUSED(synth);
+    CTSS_UNUSED(stack);
     CTSS_NodeOp2State *state = (CTSS_NodeOp2State *)(node->state);
     const float *a = state->bufA;
     float *b = state->bufB;
@@ -99,8 +99,8 @@ uint8_t ctss_process_sum(CTSS_DSPNode *node, CTSS_DSPStack *stack,
 
 uint8_t ctss_process_copy(CTSS_DSPNode *node, CTSS_DSPStack *stack,
                           CTSS_Synth *synth) {
-    CT_UNUSED(synth);
-    CT_UNUSED(stack);
+    CTSS_UNUSED(synth);
+    CTSS_UNUSED(stack);
     CTSS_NodeOp2State *state = (CTSS_NodeOp2State *)(node->state);
     const float *a = state->bufA;
     float *b = state->bufB;
@@ -115,8 +115,8 @@ uint8_t ctss_process_copy(CTSS_DSPNode *node, CTSS_DSPStack *stack,
 
 uint8_t ctss_process_madd(CTSS_DSPNode *node, CTSS_DSPStack *stack,
                           CTSS_Synth *synth) {
-    CT_UNUSED(synth);
-    CT_UNUSED(stack);
+    CTSS_UNUSED(synth);
+    CTSS_UNUSED(stack);
     CTSS_NodeOp4State *state = (CTSS_NodeOp4State *)(node->state);
     const float *a = state->bufA;
     const float *b = state->bufB;
@@ -132,8 +132,8 @@ uint8_t ctss_process_madd(CTSS_DSPNode *node, CTSS_DSPStack *stack,
 
 uint8_t ctss_process_madd_const(CTSS_DSPNode *node, CTSS_DSPStack *stack,
                                 CTSS_Synth *synth) {
-    CT_UNUSED(synth);
-    CT_UNUSED(stack);
+    CTSS_UNUSED(synth);
+    CTSS_UNUSED(stack);
     CTSS_NodeOp4CState *state = (CTSS_NodeOp4CState *)(node->state);
     const float *a = state->bufA;
     const float *b = state->bufB;

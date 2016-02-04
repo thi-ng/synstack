@@ -102,8 +102,8 @@ void ctss_calculate_biquad_coeff(CTSS_DSPNode *node, CTSS_BiquadType type,
 
 uint8_t ctss_process_biquad(CTSS_DSPNode *node, CTSS_DSPStack *stack,
                             CTSS_Synth *synth) {
-    CT_UNUSED(synth);
-    CT_UNUSED(stack);
+    CTSS_UNUSED(synth);
+    CTSS_UNUSED(stack);
     CTSS_BiquadState *state = (CTSS_BiquadState *)node->state;
     const float *src = state->src;
     float *buf = node->buf;

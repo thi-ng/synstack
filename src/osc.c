@@ -38,8 +38,8 @@ void ctss_set_osc_pblep(CTSS_DSPNode *node, CTSS_PblepOsc fn) {
 
 uint8_t ctss_process_osc_sin(CTSS_DSPNode *node, CTSS_DSPStack *stack,
                              CTSS_Synth *synth) {
-    CT_UNUSED(synth);
-    CT_UNUSED(stack);
+    CTSS_UNUSED(synth);
+    CTSS_UNUSED(stack);
     CTSS_OscState *state = (CTSS_OscState *)node->state;
     const float freq = state->freq;
     const float *lfo = state->lfo;
@@ -59,8 +59,8 @@ uint8_t ctss_process_osc_sin(CTSS_DSPNode *node, CTSS_DSPStack *stack,
 
 uint8_t ctss_process_osc_square(CTSS_DSPNode *node, CTSS_DSPStack *stack,
                                 CTSS_Synth *synth) {
-    CT_UNUSED(synth);
-    CT_UNUSED(stack);
+    CTSS_UNUSED(synth);
+    CTSS_UNUSED(stack);
     CTSS_OscState *state = (CTSS_OscState *)node->state;
     const float freq = state->freq;
     const float *lfo = state->lfo;
@@ -80,8 +80,8 @@ uint8_t ctss_process_osc_square(CTSS_DSPNode *node, CTSS_DSPStack *stack,
 
 uint8_t ctss_process_osc_saw(CTSS_DSPNode *node, CTSS_DSPStack *stack,
                              CTSS_Synth *synth) {
-    CT_UNUSED(synth);
-    CT_UNUSED(stack);
+    CTSS_UNUSED(synth);
+    CTSS_UNUSED(stack);
     CTSS_OscState *state = (CTSS_OscState *)(node->state);
     const float freq = state->freq;
     const float *lfo = state->lfo;
@@ -101,8 +101,8 @@ uint8_t ctss_process_osc_saw(CTSS_DSPNode *node, CTSS_DSPStack *stack,
 
 uint8_t ctss_process_osc_tri(CTSS_DSPNode *node, CTSS_DSPStack *stack,
                              CTSS_Synth *synth) {
-    CT_UNUSED(synth);
-    CT_UNUSED(stack);
+    CTSS_UNUSED(synth);
+    CTSS_UNUSED(stack);
     CTSS_OscState *state = (CTSS_OscState *)node->state;
     const float freq = state->freq;
     const float *lfo = state->lfo;
@@ -128,8 +128,8 @@ uint8_t ctss_process_osc_tri(CTSS_DSPNode *node, CTSS_DSPStack *stack,
 
 uint8_t ctss_process_osc_sawsin(CTSS_DSPNode *node, CTSS_DSPStack *stack,
                                 CTSS_Synth *synth) {
-    CT_UNUSED(synth);
-    CT_UNUSED(stack);
+    CTSS_UNUSED(synth);
+    CTSS_UNUSED(stack);
     CTSS_OscState *state = (CTSS_OscState *)node->state;
     const float freq = state->freq;
     const float *lfo = state->lfo;
@@ -151,8 +151,8 @@ uint8_t ctss_process_osc_sawsin(CTSS_DSPNode *node, CTSS_DSPStack *stack,
 
 uint8_t ctss_process_osc_impulse(CTSS_DSPNode *node, CTSS_DSPStack *stack,
                                  CTSS_Synth *synth) {
-    CT_UNUSED(synth);
-    CT_UNUSED(stack);
+    CTSS_UNUSED(synth);
+    CTSS_UNUSED(stack);
     CTSS_OscState *state = (CTSS_OscState *)node->state;
     const float freq = state->freq;
     const float *lfo = state->lfo;
@@ -183,8 +183,8 @@ float ctss_osc_pblep_spiral(float t, const float dt, const float lfo) {
 
 uint8_t ctss_process_osc_pblep(CTSS_DSPNode *node, CTSS_DSPStack *stack,
                                CTSS_Synth *synth) {
-    CT_UNUSED(synth);
-    CT_UNUSED(stack);
+    CTSS_UNUSED(synth);
+    CTSS_UNUSED(stack);
     CTSS_OscState *state = (CTSS_OscState *)node->state;
     const float freq = state->freq * INV_TAU;
     const float *lfo = state->lfo;

@@ -38,7 +38,7 @@
         x += 1.0f;                                                             \
     }
 
-#define CT_UNUSED(x) ((void)(x))
+#define CTSS_UNUSED(x) ((void)(x))
 
 #define NODE_ID(p, id) ctss_node_for_id((p), (id))
 #define NODE_ID_STATE(type, p, id) ((type *)(NODE_ID(p, id)->state))

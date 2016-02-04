@@ -21,8 +21,8 @@ CTSS_DSPNode *ctss_delay(char *id, CTSS_DSPNode *src, uint32_t len,
 
 uint8_t ctss_process_delay(CTSS_DSPNode *node, CTSS_DSPStack *stack,
                            CTSS_Synth *synth) {
-    CT_UNUSED(synth);
-    CT_UNUSED(stack);
+    CTSS_UNUSED(synth);
+    CTSS_UNUSED(stack);
     CTSS_DelayState *state = (CTSS_DelayState *)node->state;
     float *read = state->readPtr;
     float *write = state->writePtr;

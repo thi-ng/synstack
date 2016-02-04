@@ -32,8 +32,8 @@ void ctss_reset_pluck(CTSS_DSPNode *node, float freq, float impTime,
 
 uint8_t ctss_process_pluck(CTSS_DSPNode *node, CTSS_DSPStack *stack,
                            CTSS_Synth *synth) {
-    CT_UNUSED(synth);
-    CT_UNUSED(stack);
+    CTSS_UNUSED(synth);
+    CTSS_UNUSED(stack);
     CTSS_PluckOsc *state = (CTSS_PluckOsc *)node->state;
     float *acc = state->acc;
     float *buf = node->buf;

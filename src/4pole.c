@@ -20,8 +20,8 @@ CTSS_DSPNode *ctss_filter_4pole(char *id, CTSS_DSPNode *src, CTSS_DSPNode *lfo,
 
 uint8_t ctss_process_4pole(CTSS_DSPNode *node, CTSS_DSPStack *stack,
                            CTSS_Synth *synth) {
-    CT_UNUSED(synth);
-    CT_UNUSED(stack);
+    CTSS_UNUSED(synth);
+    CTSS_UNUSED(stack);
     CTSS_Filter4PoleState *state = (CTSS_Filter4PoleState *)(node->state);
     float *src = state->src;
     float *lfo = state->lfo;

@@ -39,8 +39,8 @@ CTSS_DSPNode *ctss_filter_formant(char *id, CTSS_Formant formant,
 
 uint8_t ctss_process_formant(CTSS_DSPNode *node, CTSS_DSPStack *stack,
                              CTSS_Synth *synth) {
-    CT_UNUSED(synth);
-    CT_UNUSED(stack);
+    CTSS_UNUSED(synth);
+    CTSS_UNUSED(stack);
     CTSS_FormantState *state = (CTSS_FormantState *)node->state;
     const float *src = state->src;
     float *buf = node->buf;
@@ -184,8 +184,8 @@ void ctss_set_formant_id(CTSS_DSPNode *node, uint8_t id) {
 
 uint8_t ctss_process_osc_formant(CTSS_DSPNode *node, CTSS_DSPStack *stack,
                                  CTSS_Synth *synth) {
-    CT_UNUSED(synth);
-    CT_UNUSED(stack);
+    CTSS_UNUSED(synth);
+    CTSS_UNUSED(stack);
     CTSS_FormantOsc *state = (CTSS_FormantOsc *)(node->state);
     const float freq = RAD_TO_HZ(state->freq);
     const float pf = freq * INV_NYQUIST_FREQ;
