@@ -6,9 +6,9 @@ typedef struct {
     const float *src;
     const float *lfo;
     float pos;
-} CT_PanningState;
+} CTSS_PanningState;
 
-CT_DSPNode *ct_synth_panning(char *id, CT_DSPNode *src, CT_DSPNode *lfo,
-                             float pos);
-uint8_t ct_synth_process_panning(CT_DSPNode *node, CT_DSPStack *stack,
-                                 CT_Synth *synth, uint32_t offset);
+CTSS_DSPNode *ctss_panning(char *id, CTSS_DSPNode *src, CTSS_DSPNode *lfo,
+                           float pos);
+uint8_t ctss_process_panning(CTSS_DSPNode *node, CTSS_DSPStack *stack,
+                             CTSS_Synth *synth, uint32_t offset);

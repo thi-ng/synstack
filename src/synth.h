@@ -40,80 +40,76 @@
 
 #define CT_UNUSED(x) ((void)(x))
 
-#define NODE_ID(p, id) ct_synth_node_for_id((p), (id))
+#define NODE_ID(p, id) ctss_node_for_id((p), (id))
 #define NODE_ID_STATE(type, p, id) ((type *)(NODE_ID(p, id)->state))
 
-typedef struct CT_DSPNode CT_DSPNode;
-typedef struct CT_DSPStack CT_DSPStack;
-typedef struct CT_Synth CT_Synth;
+typedef struct CTSS_DSPNode CTSS_DSPNode;
+typedef struct CTSS_DSPStack CTSS_DSPStack;
+typedef struct CTSS_Synth CTSS_Synth;
 
-typedef uint8_t (*CT_DSPNodeHandler)(CT_DSPNode *node, CT_DSPStack *stack,
-                                     CT_Synth *synth, uint32_t offset);
+typedef uint8_t (*CTSS_DSPNodeHandler)(CTSS_DSPNode *node, CTSS_DSPStack *stack,
+                                       CTSS_Synth *synth, uint32_t offset);
 
-typedef void *CT_DSPState;
+typedef void *CTSS_DSPState;
 
-typedef enum { STACK_ACTIVE = 1 } CT_DSPStackFlag;
+typedef enum { STACK_ACTIVE = 1 } CTSS_DSPStackFlag;
 
-typedef enum { NODE_ACTIVE = 1 } CT_DSPNodeFlag;
+typedef enum { NODE_ACTIVE = 1 } CTSS_DSPNodeFlag;
 
-struct CT_DSPNode {
+struct CTSS_DSPNode {
     float *buf;
-    CT_DSPNodeHandler handler;
-    CT_DSPState state;
-    CT_DSPNode *next;
+    CTSS_DSPNodeHandler handler;
+    CTSS_DSPState state;
+    CTSS_DSPNode *next;
     char *id;
     uint8_t flags;
 };
 
-struct CT_DSPStack {
-    CT_DSPNode *startNode;
+struct CTSS_DSPStack {
+    CTSS_DSPNode *startNode;
     uint8_t flags;
 };
 
-struct CT_Synth {
-    CT_DSPStack *stacks;
-    CT_DSPStack post[1];
-    CT_DSPNode *lfo[4];
+struct CTSS_Synth {
+    CTSS_DSPStack *stacks;
+    CTSS_DSPStack post[1];
+    CTSS_DSPNode *lfo[4];
     float **stackOutputs;
     uint8_t numStacks;
     uint8_t numLFO;
 };
 
-const float ct_synth_notes[96];
-const float ct_synth_zero[AUDIO_BUFFER_SIZE];
+const float ctss_notes[96];
+const float ctss_zero[AUDIO_BUFFER_SIZE];
 
-void ct_synth_init(CT_Synth *synth, uint8_t numStacks);
-void ct_synth_update(CT_Synth *synth);
-void ct_synth_init_stack(CT_DSPStack *stack);
-void ct_synth_build_stack(CT_DSPStack *stack, CT_DSPNode **nodes,
-                          uint8_t length);
-void ct_synth_collect_stacks(CT_Synth *synth);
+void ctss_init(CTSS_Synth *synth, uint8_t numStacks);
+void ctss_update(CTSS_Synth *synth);
+void ctss_init_stack(CTSS_DSPStack *stack);
+void ctss_build_stack(CTSS_DSPStack *stack, CTSS_DSPNode **nodes,
+                      uint8_t length);
+void ctss_collect_stacks(CTSS_Synth *synth);
 
-void ct_synth_update_mix_mono_i16(CT_Synth *synth, uint32_t frames,
-                                  int16_t *out);
-void ct_synth_update_mix_stereo_i16(CT_Synth *synth, uint32_t frames,
-                                    int16_t *out);
-void ct_synth_update_mix_mono_f32(CT_Synth *synth, uint32_t frames, float *out);
-void ct_synth_update_mix_stereo_f32(CT_Synth *synth, uint32_t frames,
-                                    float *out);
+void ctss_update_mix_mono_i16(CTSS_Synth *synth, uint32_t frames, int16_t *out);
+void ctss_update_mix_stereo_i16(CTSS_Synth *synth, uint32_t frames,
+                                int16_t *out);
+void ctss_update_mix_mono_f32(CTSS_Synth *synth, uint32_t frames, float *out);
+void ctss_update_mix_stereo_f32(CTSS_Synth *synth, uint32_t frames, float *out);
 
-void ct_synth_init_node(CT_DSPNode *node, char *id, uint8_t channels);
-CT_DSPNode *ct_synth_node(char *id, uint8_t channels);
-void ct_synth_free_node_state(CT_DSPNode *node);
+void ctss_init_node(CTSS_DSPNode *node, char *id, uint8_t channels);
+CTSS_DSPNode *ctss_node(char *id, uint8_t channels);
+void ctss_free_node_state(CTSS_DSPNode *node);
 
-void ct_synth_activate_stack(CT_DSPStack *stack);
-void ct_synth_process_stack(CT_DSPStack *stack, CT_Synth *synth,
-                            uint32_t offset);
-void ct_synth_stack_append(CT_DSPStack *stack, CT_DSPNode *node);
-CT_DSPNode *ct_synth_stack_last_node(CT_DSPStack *stack);
-CT_DSPNode *ct_synth_node_for_id(CT_DSPStack *stack, const char *id);
+void ctss_activate_stack(CTSS_DSPStack *stack);
+void ctss_process_stack(CTSS_DSPStack *stack, CTSS_Synth *synth,
+                        uint32_t offset);
+void ctss_stack_append(CTSS_DSPStack *stack, CTSS_DSPNode *node);
+CTSS_DSPNode *ctss_stack_last_node(CTSS_DSPStack *stack);
+CTSS_DSPNode *ctss_node_for_id(CTSS_DSPStack *stack, const char *id);
 
-void ct_synth_trace_stack(CT_DSPStack *stack);
-void ct_synth_trace_node(CT_DSPNode *node);
+void ctss_trace_stack(CTSS_DSPStack *stack);
+void ctss_trace_node(CTSS_DSPNode *node);
 
-void ct_synth_mixdown_i16(float **in, int16_t *out, uint32_t offset,
-                          uint32_t len, const uint8_t num,
-                          const uint8_t stride);
-void ct_synth_mixdown_f32(float **sources, float *out, uint32_t offset,
-                          uint32_t len, const uint8_t num,
-                          const uint8_t stride);
+void ctss_mixdown_i16(float **in, int16_t *out, uint32_t offset, uint32_t len,
+                      const uint8_t num, const uint8_t stride);
+void ctss_mixdown_f32(float **sources, float *out, uint32_t offset,
+                      uint32_t len, const uint8_t num, const uint8_t stride);

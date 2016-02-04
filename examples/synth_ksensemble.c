@@ -4,7 +4,7 @@ const uint8_t scale[] = {36, 40, 43, 45, 60, 48, 52, 55};
 const uint8_t scale2[] = {33, 31, 26, 31, 29, 33, 31, 29};
 const float pitch[] = {0.5f, 1.0f, 1.0f};
 
-static void init_voice(CT_Synth *synth, CT_DSPStack *stack, float freq);
+static void init_voice(CTSS_Synth *synth, CTSS_DSPStack *stack, float freq);
 static int render_synth(const void *in, void *out, unsigned long frames,
                         const PaStreamCallbackTimeInfo *timeInfo,
                         PaStreamCallbackFlags status, void *data);
@@ -12,14 +12,14 @@ static int render_synth(const void *in, void *out, unsigned long frames,
 int main(int argc, char *argv[]) {
     AppState app;
     srand(time(0));
-    ct_synth_init(&app.synth, 32);
-    app.synth.lfo[0] = ct_synth_osc("lfo1", ct_synth_process_osc_sin, 0.0f,
-                                    HZ_TO_RAD(1.0f / 16.0f), 0.5f, 1.2f);
-    app.synth.lfo[1] = ct_synth_osc("lfo2", ct_synth_process_osc_sin, 0.0f,
-                                    HZ_TO_RAD(0.25f), 0.495f, 0.5f);
+    ctss_init(&app.synth, 32);
+    app.synth.lfo[0] = ctss_osc("lfo1", ctss_process_osc_sin, 0.0f,
+                                HZ_TO_RAD(1.0f / 16.0f), 0.5f, 1.2f);
+    app.synth.lfo[1] = ctss_osc("lfo2", ctss_process_osc_sin, 0.0f,
+                                HZ_TO_RAD(0.25f), 0.495f, 0.5f);
     app.synth.numLFO = 2;
     for (uint8_t i = 0; i < app.synth.numStacks; i++) {
-        init_voice(&app.synth, &app.synth.stacks[i], ct_synth_notes[scale[0]]);
+        init_voice(&app.synth, &app.synth.stacks[i], ctss_notes[scale[0]]);
     }
     app.pitch = -10;
     app.callback = render_synth;
@@ -28,20 +28,20 @@ int main(int argc, char *argv[]) {
     return demo(&app);
 }
 
-static void init_voice(CT_Synth *synth, CT_DSPStack *stack, float freq) {
-    ct_synth_init_stack(stack);
-    CT_DSPNode *env =
-        ct_synth_adsr("env", synth->lfo[0], 0.15f, 0.02f, 0.3f, 1.0f, 0.5f);
-    CT_DSPNode *osc1 = ct_synth_osc_pluck("osc1", freq, 0.001f, 0.6f, 0.0f);
-    CT_DSPNode *sum = ct_synth_op2("sum", osc1, env, ct_synth_process_mult);
-    CT_DSPNode *filter =
-        ct_synth_filter_iir("filter", IIR_LP, sum, NULL, 18000.0f, 0.1f);
-    CT_DSPNode *pan = ct_synth_panning("pan", filter, NULL, 0.5f);
-    CT_DSPNode *delay = ct_synth_delay(
+static void init_voice(CTSS_Synth *synth, CTSS_DSPStack *stack, float freq) {
+    ctss_init_stack(stack);
+    CTSS_DSPNode *env =
+        ctss_adsr("env", synth->lfo[0], 0.15f, 0.02f, 0.3f, 1.0f, 0.5f);
+    CTSS_DSPNode *osc1 = ctss_osc_pluck("osc1", freq, 0.001f, 0.6f, 0.0f);
+    CTSS_DSPNode *sum = ctss_op2("sum", osc1, env, ctss_process_mult);
+    CTSS_DSPNode *filter =
+        ctss_filter_iir("filter", IIR_LP, sum, NULL, 18000.0f, 0.1f);
+    CTSS_DSPNode *pan = ctss_panning("pan", filter, NULL, 0.5f);
+    CTSS_DSPNode *delay = ctss_delay(
         "delay", pan, (uint32_t)(SAMPLE_RATE * 0.25f * 1.5f), 0.3f, 2);
 
-    CT_DSPNode *nodes[] = {env, osc1, sum, filter, pan, delay};
-    ct_synth_build_stack(stack, nodes, 6);
+    CTSS_DSPNode *nodes[] = {env, osc1, sum, filter, pan, delay};
+    ctss_build_stack(stack, nodes, 6);
 }
 
 static int render_synth(const void *in, void *out, unsigned long frames,
@@ -51,39 +51,38 @@ static int render_synth(const void *in, void *out, unsigned long frames,
     float time = (float)timeInfo->currentTime;
     float ft = fmodf(time, 0.25f);
     if (ft < 0.008) {
-        float freq = ct_synth_notes[scale[app->noteID % 8] + app->pitch];
-        CT_DSPStack *s = &app->synth.stacks[app->voiceID];
-        ct_synth_reset_adsr(NODE_ID(s, "env"));
+        float freq = ctss_notes[scale[app->noteID % 8] + app->pitch];
+        CTSS_DSPStack *s = &app->synth.stacks[app->voiceID];
+        ctss_reset_adsr(NODE_ID(s, "env"));
         freq *= pitch[rand() % 3];
-        ct_synth_reset_pluck(NODE_ID(s, "osc1"), freq, ct_randf(0.001f, 0.05f),
-                             ct_randf(0.05f, 0.95f));
-        CT_PluckOsc *osc = NODE_ID_STATE(CT_PluckOsc, s, "osc1");
+        ctss_reset_pluck(NODE_ID(s, "osc1"), freq, ct_randf(0.001f, 0.05f),
+                         ct_randf(0.05f, 0.95f));
+        CTSS_PluckOsc *osc = NODE_ID_STATE(CTSS_PluckOsc, s, "osc1");
         osc->gain = ct_randf(0.15f, 0.6f);
         osc->damping = ct_randf(0.2f, 0.5f);
         osc->variation = 0.5f;
-        NODE_ID_STATE(CT_PanningState, s, "pan")->pos = ct_randf(0.0f, 1.0f);
-        ct_synth_activate_stack(s);
+        NODE_ID_STATE(CTSS_PanningState, s, "pan")->pos = ct_randf(0.0f, 1.0f);
+        ctss_activate_stack(s);
         app->noteID++;
         app->voiceID = (app->voiceID + 1) % app->synth.numStacks;
     }
     ft = fmodf(time, 0.5f);
     if (ft < 0.008) {
-        float freq =
-            ct_synth_notes[scale[7 - app->noteID % 8] + app->pitch + 7];
-        CT_DSPStack *s = &app->synth.stacks[app->voiceID];
-        ct_synth_reset_adsr(NODE_ID(s, "env"));
-        ct_synth_reset_pluck(NODE_ID(s, "osc1"), freq, ct_randf(0.005f, 0.05f),
-                             ct_randf(0.05f, 0.95f));
-        CT_PluckOsc *osc = NODE_ID_STATE(CT_PluckOsc, s, "osc1");
+        float freq = ctss_notes[scale[7 - app->noteID % 8] + app->pitch + 7];
+        CTSS_DSPStack *s = &app->synth.stacks[app->voiceID];
+        ctss_reset_adsr(NODE_ID(s, "env"));
+        ctss_reset_pluck(NODE_ID(s, "osc1"), freq, ct_randf(0.005f, 0.05f),
+                         ct_randf(0.05f, 0.95f));
+        CTSS_PluckOsc *osc = NODE_ID_STATE(CTSS_PluckOsc, s, "osc1");
         osc->gain = ct_randf(0.05f, 0.4f) * 1.5f;
         osc->damping = ct_randf(0.1f, 0.9f);
         osc->variation = 0.5f;
-        NODE_ID_STATE(CT_PanningState, s, "pan")->pos = ct_randf(0.0f, 1.0f);
-        ct_synth_activate_stack(s);
+        NODE_ID_STATE(CTSS_PanningState, s, "pan")->pos = ct_randf(0.0f, 1.0f);
+        ctss_activate_stack(s);
         app->noteID++;
         app->voiceID = (app->voiceID + 1) % app->synth.numStacks;
     }
 
-    ct_synth_update_mix_stereo_f32(&app->synth, frames, (float *)out);
+    ctss_update_mix_stereo_f32(&app->synth, frames, (float *)out);
     return 0;
 }

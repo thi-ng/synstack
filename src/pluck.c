@@ -1,26 +1,26 @@
 #include <string.h>
 #include "pluck.h"
 
-CT_DSPNode *ct_synth_osc_pluck(char *id, float freq, float impTime, float gain,
-                               float dc) {
-    CT_DSPNode *node = ct_synth_node(id, 1);
-    CT_PluckOsc *osc = (CT_PluckOsc *)calloc(1, sizeof(CT_PluckOsc));
+CTSS_DSPNode *ctss_osc_pluck(char *id, float freq, float impTime, float gain,
+                             float dc) {
+    CTSS_DSPNode *node = ctss_node(id, 1);
+    CTSS_PluckOsc *osc = (CTSS_PluckOsc *)calloc(1, sizeof(CTSS_PluckOsc));
     osc->gain = gain;
     osc->dcOffset = dc;
     osc->variation = 0.0f;
     osc->damping = 1.0f;
     node->state = osc;
-    node->handler = ct_synth_process_pluck;
-    ct_synth_reset_pluck(node, freq, impTime, 0.5f);
+    node->handler = ctss_process_pluck;
+    ctss_reset_pluck(node, freq, impTime, 0.5f);
     return node;
 }
 
-void ct_synth_reset_pluck(CT_DSPNode *node, float freq, float impTime,
-                          float smooth) {
+void ctss_reset_pluck(CTSS_DSPNode *node, float freq, float impTime,
+                      float smooth) {
     if (freq < PLUCK_ACC_FREQ_LIMIT) {
         freq = PLUCK_ACC_FREQ_LIMIT;
     }
-    CT_PluckOsc *state = (CT_PluckOsc *)node->state;
+    CTSS_PluckOsc *state = (CTSS_PluckOsc *)node->state;
     memset((void *)state->acc, 0, sizeof(float) * state->len);
     state->phase = 1;
     state->impulse = (int32_t)(impTime * SAMPLE_RATE) - 1;
@@ -30,11 +30,11 @@ void ct_synth_reset_pluck(CT_DSPNode *node, float freq, float impTime,
     state->lastImp = 0.0f;
 }
 
-uint8_t ct_synth_process_pluck(CT_DSPNode *node, CT_DSPStack *stack,
-                               CT_Synth *synth, uint32_t offset) {
+uint8_t ctss_process_pluck(CTSS_DSPNode *node, CTSS_DSPStack *stack,
+                           CTSS_Synth *synth, uint32_t offset) {
     CT_UNUSED(synth);
     CT_UNUSED(stack);
-    CT_PluckOsc *state = (CT_PluckOsc *)node->state;
+    CTSS_PluckOsc *state = (CTSS_PluckOsc *)node->state;
     float *acc = state->acc;
     float *buf = node->buf + offset;
     int32_t impulse = state->impulse;

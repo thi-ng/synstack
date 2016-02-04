@@ -1,24 +1,24 @@
 #include <math.h>
 #include "foldback.h"
 
-CT_DSPNode *ct_synth_foldback(char *id, CT_DSPNode *src, float threshold,
-                              float amp) {
-    CT_DSPNode *node = ct_synth_node(id, 1);
-    CT_FoldbackState *state =
-        (CT_FoldbackState *)calloc(1, sizeof(CT_FoldbackState));
+CTSS_DSPNode *ctss_foldback(char *id, CTSS_DSPNode *src, float threshold,
+                            float amp) {
+    CTSS_DSPNode *node = ctss_node(id, 1);
+    CTSS_FoldbackState *state =
+        (CTSS_FoldbackState *)calloc(1, sizeof(CTSS_FoldbackState));
     state->src = src->buf;
     state->threshold = threshold;
     state->amp = amp;
     node->state = state;
-    node->handler = ct_synth_process_foldback;
+    node->handler = ctss_process_foldback;
     return node;
 }
 
-uint8_t ct_synth_process_foldback(CT_DSPNode *node, CT_DSPStack *stack,
-                                  CT_Synth *synth, uint32_t offset) {
+uint8_t ctss_process_foldback(CTSS_DSPNode *node, CTSS_DSPStack *stack,
+                              CTSS_Synth *synth, uint32_t offset) {
     CT_UNUSED(synth);
     CT_UNUSED(stack);
-    CT_FoldbackState *state = (CT_FoldbackState *)(node->state);
+    CTSS_FoldbackState *state = (CTSS_FoldbackState *)(node->state);
     const float *src = state->src;
     const float thresh = state->threshold;
     const float thresh2 = thresh * 2.0f;

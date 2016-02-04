@@ -1,10 +1,10 @@
 #include "4pole.h"
 
-CT_DSPNode *ct_synth_filter_4pole(char *id, CT_DSPNode *src, CT_DSPNode *lfo,
-                                  float freq, float reso, float coeff) {
-    CT_DSPNode *node = ct_synth_node(id, 1);
-    CT_Filter4PoleState *state =
-        (CT_Filter4PoleState *)calloc(1, sizeof(CT_Filter4PoleState));
+CTSS_DSPNode *ctss_filter_4pole(char *id, CTSS_DSPNode *src, CTSS_DSPNode *lfo,
+                                float freq, float reso, float coeff) {
+    CTSS_DSPNode *node = ctss_node(id, 1);
+    CTSS_Filter4PoleState *state =
+        (CTSS_Filter4PoleState *)calloc(1, sizeof(CTSS_Filter4PoleState));
     state->src = &src->buf[0];
     state->lfo = (lfo != NULL ? &lfo->buf[0] : NULL);
     state->cutoffFreq = freq;
@@ -14,15 +14,15 @@ CT_DSPNode *ct_synth_filter_4pole(char *id, CT_DSPNode *src, CT_DSPNode *lfo,
         state->in[i] = state->out[i] = 0.0f;
     }
     node->state = state;
-    node->handler = ct_synth_process_filter4p;
+    node->handler = ctss_process_4pole;
     return node;
 }
 
-uint8_t ct_synth_process_filter4p(CT_DSPNode *node, CT_DSPStack *stack,
-                                  CT_Synth *synth, uint32_t offset) {
+uint8_t ctss_process_4pole(CTSS_DSPNode *node, CTSS_DSPStack *stack,
+                              CTSS_Synth *synth, uint32_t offset) {
     CT_UNUSED(synth);
     CT_UNUSED(stack);
-    CT_Filter4PoleState *state = (CT_Filter4PoleState *)(node->state);
+    CTSS_Filter4PoleState *state = (CTSS_Filter4PoleState *)(node->state);
     float *src = state->src + offset;
     float *lfo = state->lfo + offset;
     float *buf = &node->buf[0];

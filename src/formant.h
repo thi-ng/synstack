@@ -11,13 +11,13 @@ typedef enum {
     VOWEL_I = 2,
     VOWEL_O = 3,
     VOWEL_U = 4
-} CT_Formant;
+} CTSS_Formant;
 
 typedef struct {
     const float *src;
     double f[10];
-    CT_Formant type;
-} CT_FormantState;
+    CTSS_Formant type;
+} CTSS_FormantState;
 
 typedef struct {
     float *coeff;
@@ -27,21 +27,22 @@ typedef struct {
     float dcOffset;
     float smooth;
     float f[8];
-} CT_FormantOsc;
+} CTSS_FormantOsc;
 
-void ct_synth_preinit_osc_formant(void);
-CT_DSPNode *ct_synth_filter_formant(char *id, CT_Formant type, CT_DSPNode *src);
+void ctss_preinit_osc_formant(void);
+CTSS_DSPNode *ctss_filter_formant(char *id, CTSS_Formant type,
+                                  CTSS_DSPNode *src);
 
-uint8_t ct_synth_process_formant(CT_DSPNode *node, CT_DSPStack *stack,
-                                 CT_Synth *synth, uint32_t offset);
+uint8_t ctss_process_formant(CTSS_DSPNode *node, CTSS_DSPStack *stack,
+                             CTSS_Synth *synth, uint32_t offset);
 
-CT_DSPNode *ct_synth_osc_formant_id(char *id, uint8_t formant, float freq,
-                                    float gain, float dc, float smooth);
+CTSS_DSPNode *ctss_osc_formant_id(char *id, uint8_t formant, float freq,
+                                  float gain, float dc, float smooth);
 
-CT_DSPNode *ct_synth_osc_formant(char *id, float *formant, float freq,
-                                 float gain, float dc, float smooth);
+CTSS_DSPNode *ctss_osc_formant(char *id, float *formant, float freq, float gain,
+                               float dc, float smooth);
 
-uint8_t ct_synth_process_osc_formant(CT_DSPNode *node, CT_DSPStack *stack,
-                                     CT_Synth *synth, uint32_t offset);
+uint8_t ctss_process_osc_formant(CTSS_DSPNode *node, CTSS_DSPStack *stack,
+                                 CTSS_Synth *synth, uint32_t offset);
 
-void ct_synth_set_formant_id(CT_DSPNode *node, uint8_t id);
+void ctss_set_formant_id(CTSS_DSPNode *node, uint8_t id);

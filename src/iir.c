@@ -2,21 +2,21 @@
 #include <stdio.h>
 #include "iir.h"
 
-CT_DSPNode *ct_synth_filter_iir(char *id, IIRType type, CT_DSPNode *src,
-                                CT_DSPNode *lfo, float cutoff, float reso) {
-    CT_DSPNode *node = ct_synth_node(id, 1);
-    CT_IIRState *state = (CT_IIRState *)calloc(1, sizeof(CT_IIRState));
+CTSS_DSPNode *ctss_filter_iir(char *id, CTSS_IIRType type, CTSS_DSPNode *src,
+                              CTSS_DSPNode *lfo, float cutoff, float reso) {
+    CTSS_DSPNode *node = ctss_node(id, 1);
+    CTSS_IIRState *state = (CTSS_IIRState *)calloc(1, sizeof(CTSS_IIRState));
     state->src = &src->buf[0];
-    state->lfo = (lfo != NULL ? &lfo->buf[0] : ct_synth_zero);
+    state->lfo = (lfo != NULL ? &lfo->buf[0] : ctss_zero);
     state->type = type;
     node->state = state;
-    node->handler = ct_synth_process_iir;
-    ct_synth_calculate_iir_coeff(node, cutoff, reso);
+    node->handler = ctss_process_iir;
+    ctss_calculate_iir_coeff(node, cutoff, reso);
     return node;
 }
 
-void ct_synth_calculate_iir_coeff(CT_DSPNode *node, float cutoff, float reso) {
-    CT_IIRState *state = (CT_IIRState *)node->state;
+void ctss_calculate_iir_coeff(CTSS_DSPNode *node, float cutoff, float reso) {
+    CTSS_IIRState *state = (CTSS_IIRState *)node->state;
     state->cutoff = cutoff;
     state->resonance = reso;
     state->freq = 2.0f * sinf(PI * fminf(0.25f, cutoff / (SAMPLE_RATE * 2.0f)));
@@ -29,11 +29,11 @@ void ct_synth_calculate_iir_coeff(CT_DSPNode *node, float cutoff, float reso) {
     state->f[3] = 0.0f; // notch
 }
 
-uint8_t ct_synth_process_iir(CT_DSPNode *node, CT_DSPStack *stack,
-                             CT_Synth *synth, uint32_t offset) {
+uint8_t ctss_process_iir(CTSS_DSPNode *node, CTSS_DSPStack *stack,
+                         CTSS_Synth *synth, uint32_t offset) {
     CT_UNUSED(synth);
     CT_UNUSED(stack);
-    CT_IIRState *state = (CT_IIRState *)node->state;
+    CTSS_IIRState *state = (CTSS_IIRState *)node->state;
     const float *src = state->src + offset;
     const float *lfo = state->lfo + offset;
     float *buf = node->buf + offset;
@@ -66,8 +66,8 @@ uint8_t ct_synth_process_iir(CT_DSPNode *node, CT_DSPStack *stack,
 // http://www.musicdsp.org/showArchiveComment.php?ArchiveID=235
 static float cap = 0.0f;
 
-float ct_synth_bassboost(float x, const float sel, const float amp,
-                         const float wet) {
+float ctss_bassboost(float x, const float sel, const float amp,
+                     const float wet) {
     float gain = 1.0f / (sel + 1.0f);
     cap = (x + cap * sel) * gain;
     x = (x + cap * wet) * amp;

@@ -1,16 +1,16 @@
 #include <math.h>
 #include "osc.h"
 
-CT_DSPNode *ct_synth_osc(char *id, CT_DSPNodeHandler fn, float phase,
-                         float freq, float gain, float dc) {
-    CT_DSPNode *node = ct_synth_node(id, 1);
-    CT_OscState *osc = (CT_OscState *)calloc(1, sizeof(CT_OscState));
+CTSS_DSPNode *ctss_osc(char *id, CTSS_DSPNodeHandler fn, float phase,
+                       float freq, float gain, float dc) {
+    CTSS_DSPNode *node = ctss_node(id, 1);
+    CTSS_OscState *osc = (CTSS_OscState *)calloc(1, sizeof(CTSS_OscState));
     osc->phase = phase;
     osc->freq = freq;
     osc->gain = gain;
     osc->dcOffset = dc;
-    osc->lfo = ct_synth_zero;
-    osc->env = ct_synth_zero;
+    osc->lfo = ctss_zero;
+    osc->env = ctss_zero;
     osc->lfoDepth = 0.0f;
     osc->envDepth = 0.0f;
     node->state = osc;
@@ -18,29 +18,29 @@ CT_DSPNode *ct_synth_osc(char *id, CT_DSPNodeHandler fn, float phase,
     return node;
 }
 
-void ct_synth_set_osc_lfo(CT_DSPNode *node, const CT_DSPNode *lfo,
-                          float depth) {
-    CT_OscState *state = (CT_OscState *)node->state;
+void ctss_set_osc_lfo(CTSS_DSPNode *node, const CTSS_DSPNode *lfo,
+                      float depth) {
+    CTSS_OscState *state = (CTSS_OscState *)node->state;
     state->lfo = lfo->buf;
     state->lfoDepth = depth;
 }
 
-void ct_synth_set_osc_env(CT_DSPNode *node, const CT_DSPNode *env,
-                          float depth) {
-    CT_OscState *state = (CT_OscState *)node->state;
+void ctss_set_osc_env(CTSS_DSPNode *node, const CTSS_DSPNode *env,
+                      float depth) {
+    CTSS_OscState *state = (CTSS_OscState *)node->state;
     state->env = env->buf;
     state->envDepth = depth;
 }
 
-void ct_synth_set_osc_pblep(CT_DSPNode *node, CT_PblepOsc fn) {
-    ((CT_OscState *)node->state)->fn = fn;
+void ctss_set_osc_pblep(CTSS_DSPNode *node, CTSS_PblepOsc fn) {
+    ((CTSS_OscState *)node->state)->fn = fn;
 }
 
-uint8_t ct_synth_process_osc_sin(CT_DSPNode *node, CT_DSPStack *stack,
-                                 CT_Synth *synth, uint32_t offset) {
+uint8_t ctss_process_osc_sin(CTSS_DSPNode *node, CTSS_DSPStack *stack,
+                             CTSS_Synth *synth, uint32_t offset) {
     CT_UNUSED(synth);
     CT_UNUSED(stack);
-    CT_OscState *state = (CT_OscState *)node->state;
+    CTSS_OscState *state = (CTSS_OscState *)node->state;
     const float freq = state->freq;
     const float *lfo = state->lfo + offset;
     // const float *env = state->env + offset;
@@ -57,11 +57,11 @@ uint8_t ct_synth_process_osc_sin(CT_DSPNode *node, CT_DSPStack *stack,
     return 0;
 }
 
-uint8_t ct_synth_process_osc_square(CT_DSPNode *node, CT_DSPStack *stack,
-                                    CT_Synth *synth, uint32_t offset) {
+uint8_t ctss_process_osc_square(CTSS_DSPNode *node, CTSS_DSPStack *stack,
+                                CTSS_Synth *synth, uint32_t offset) {
     CT_UNUSED(synth);
     CT_UNUSED(stack);
-    CT_OscState *state = (CT_OscState *)node->state;
+    CTSS_OscState *state = (CTSS_OscState *)node->state;
     const float freq = state->freq;
     const float *lfo = state->lfo + offset;
     // const float *env = state->env + offset;
@@ -78,11 +78,11 @@ uint8_t ct_synth_process_osc_square(CT_DSPNode *node, CT_DSPStack *stack,
     return 0;
 }
 
-uint8_t ct_synth_process_osc_saw(CT_DSPNode *node, CT_DSPStack *stack,
-                                 CT_Synth *synth, uint32_t offset) {
+uint8_t ctss_process_osc_saw(CTSS_DSPNode *node, CTSS_DSPStack *stack,
+                             CTSS_Synth *synth, uint32_t offset) {
     CT_UNUSED(synth);
     CT_UNUSED(stack);
-    CT_OscState *state = (CT_OscState *)(node->state);
+    CTSS_OscState *state = (CTSS_OscState *)(node->state);
     const float freq = state->freq;
     const float *lfo = state->lfo + offset;
     // const float *env = state->env + offset;
@@ -99,11 +99,11 @@ uint8_t ct_synth_process_osc_saw(CT_DSPNode *node, CT_DSPStack *stack,
     return 0;
 }
 
-uint8_t ct_synth_process_osc_tri(CT_DSPNode *node, CT_DSPStack *stack,
-                                 CT_Synth *synth, uint32_t offset) {
+uint8_t ctss_process_osc_tri(CTSS_DSPNode *node, CTSS_DSPStack *stack,
+                             CTSS_Synth *synth, uint32_t offset) {
     CT_UNUSED(synth);
     CT_UNUSED(stack);
-    CT_OscState *state = (CT_OscState *)node->state;
+    CTSS_OscState *state = (CTSS_OscState *)node->state;
     const float freq = state->freq;
     const float *lfo = state->lfo + offset;
     // const float *env = state->env + offset;
@@ -126,11 +126,11 @@ uint8_t ct_synth_process_osc_tri(CT_DSPNode *node, CT_DSPStack *stack,
     return 0;
 }
 
-uint8_t ct_synth_process_osc_sawsin(CT_DSPNode *node, CT_DSPStack *stack,
-                                    CT_Synth *synth, uint32_t offset) {
+uint8_t ctss_process_osc_sawsin(CTSS_DSPNode *node, CTSS_DSPStack *stack,
+                                CTSS_Synth *synth, uint32_t offset) {
     CT_UNUSED(synth);
     CT_UNUSED(stack);
-    CT_OscState *state = (CT_OscState *)node->state;
+    CTSS_OscState *state = (CTSS_OscState *)node->state;
     const float freq = state->freq;
     const float *lfo = state->lfo + offset;
     // const float *env = state->env + offset;
@@ -149,11 +149,11 @@ uint8_t ct_synth_process_osc_sawsin(CT_DSPNode *node, CT_DSPStack *stack,
     return 0;
 }
 
-uint8_t ct_synth_process_osc_impulse(CT_DSPNode *node, CT_DSPStack *stack,
-                                     CT_Synth *synth, uint32_t offset) {
+uint8_t ctss_process_osc_impulse(CTSS_DSPNode *node, CTSS_DSPStack *stack,
+                                 CTSS_Synth *synth, uint32_t offset) {
     CT_UNUSED(synth);
     CT_UNUSED(stack);
-    CT_OscState *state = (CT_OscState *)node->state;
+    CTSS_OscState *state = (CTSS_OscState *)node->state;
     const float freq = state->freq;
     const float *lfo = state->lfo + offset;
     // const float *env = state->env + offset;
@@ -169,26 +169,26 @@ uint8_t ct_synth_process_osc_impulse(CT_DSPNode *node, CT_DSPStack *stack,
     return 0;
 }
 
-float ct_osc_pblep_saw(float t, const float dt, const float lfo) {
+float ctss_osc_pblep_saw(float t, const float dt, const float lfo) {
     return 2.0f * t - 1.0f;
 }
 
-float ct_osc_pblep_pwm(float t, const float dt, const float lfo) {
+float ctss_osc_pblep_pwm(float t, const float dt, const float lfo) {
     return (t < lfo) ? -1.0 : 1.0f;
 }
 
-float ct_osc_pblep_spiral(float t, const float dt, const float lfo) {
+float ctss_osc_pblep_spiral(float t, const float dt, const float lfo) {
     return ct_fast_cos(lfo * t * TAU) * t;
 }
 
-uint8_t ct_synth_process_osc_pblep(CT_DSPNode *node, CT_DSPStack *stack,
-                                   CT_Synth *synth, uint32_t offset) {
+uint8_t ctss_process_osc_pblep(CTSS_DSPNode *node, CTSS_DSPStack *stack,
+                               CTSS_Synth *synth, uint32_t offset) {
     CT_UNUSED(synth);
     CT_UNUSED(stack);
-    CT_OscState *state = (CT_OscState *)node->state;
+    CTSS_OscState *state = (CTSS_OscState *)node->state;
     const float freq = state->freq * INV_TAU;
     const float *lfo = state->lfo + offset;
-    const CT_PblepOsc fn = state->fn;
+    const CTSS_PblepOsc fn = state->fn;
     float phase = state->phase;
     float *buf = node->buf + offset;
     uint32_t len = AUDIO_BUFFER_SIZE - offset;
@@ -204,4 +204,4 @@ uint8_t ct_synth_process_osc_pblep(CT_DSPNode *node, CT_DSPStack *stack,
     return 0;
 }
 
-PBLEP_OSC(ct_synth_process_osc_spiral, ct_fast_cos(*lfo++ *phase *TAU) * phase);
+PBLEP_OSC(ctss_process_osc_spiral, ct_fast_cos(*lfo++ *phase *TAU) * phase);

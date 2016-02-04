@@ -2,11 +2,11 @@
 #include "node_ops.h"
 #include "delay.h"
 
-CT_DSPNode *ct_synth_op2(char *id, CT_DSPNode *a, CT_DSPNode *b,
-                         CT_DSPNodeHandler fn) {
-    CT_DSPNode *node = ct_synth_node(id, 1);
-    CT_NodeOp2State *state =
-        (CT_NodeOp2State *)calloc(1, sizeof(CT_NodeOp2State));
+CTSS_DSPNode *ctss_op2(char *id, CTSS_DSPNode *a, CTSS_DSPNode *b,
+                       CTSS_DSPNodeHandler fn) {
+    CTSS_DSPNode *node = ctss_node(id, 1);
+    CTSS_NodeOp2State *state =
+        (CTSS_NodeOp2State *)calloc(1, sizeof(CTSS_NodeOp2State));
     state->bufA = a->buf;
     state->bufB = b->buf;
     node->state = state;
@@ -14,11 +14,11 @@ CT_DSPNode *ct_synth_op2(char *id, CT_DSPNode *a, CT_DSPNode *b,
     return node;
 }
 
-CT_DSPNode *ct_synth_op2_const(char *id, CT_DSPNode *a, float af,
-                               CT_DSPNodeHandler fn) {
-    CT_DSPNode *node = ct_synth_node(id, 1);
-    CT_NodeOp2CState *state =
-        (CT_NodeOp2CState *)calloc(1, sizeof(CT_NodeOp2CState));
+CTSS_DSPNode *ctss_op2_const(char *id, CTSS_DSPNode *a, float af,
+                             CTSS_DSPNodeHandler fn) {
+    CTSS_DSPNode *node = ctss_node(id, 1);
+    CTSS_NodeOp2CState *state =
+        (CTSS_NodeOp2CState *)calloc(1, sizeof(CTSS_NodeOp2CState));
     state->bufA = a->buf;
     state->af = af;
     node->state = state;
@@ -26,11 +26,12 @@ CT_DSPNode *ct_synth_op2_const(char *id, CT_DSPNode *a, float af,
     return node;
 }
 
-CT_DSPNode *ct_synth_op4_const(char *id, CT_DSPNode *a, float af, CT_DSPNode *b,
-                               float bf, CT_DSPNodeHandler fn) {
-    CT_DSPNode *node = ct_synth_node(id, 1);
-    CT_NodeOp4CState *state =
-        (CT_NodeOp4CState *)calloc(1, sizeof(CT_NodeOp4CState));
+CTSS_DSPNode *ctss_op4_const(char *id, CTSS_DSPNode *a, float af,
+                             CTSS_DSPNode *b, float bf,
+                             CTSS_DSPNodeHandler fn) {
+    CTSS_DSPNode *node = ctss_node(id, 1);
+    CTSS_NodeOp4CState *state =
+        (CTSS_NodeOp4CState *)calloc(1, sizeof(CTSS_NodeOp4CState));
     state->bufA = a->buf;
     state->af = af;
     state->bufB = b->buf;
@@ -40,11 +41,12 @@ CT_DSPNode *ct_synth_op4_const(char *id, CT_DSPNode *a, float af, CT_DSPNode *b,
     return node;
 }
 
-CT_DSPNode *ct_synth_op4(char *id, CT_DSPNode *a, CT_DSPNode *b, CT_DSPNode *c,
-                         CT_DSPNode *d, CT_DSPNodeHandler fn) {
-    CT_DSPNode *node = ct_synth_node(id, 1);
-    CT_NodeOp4State *state =
-        (CT_NodeOp4State *)calloc(1, sizeof(CT_NodeOp4State));
+CTSS_DSPNode *ctss_op4(char *id, CTSS_DSPNode *a, CTSS_DSPNode *b,
+                       CTSS_DSPNode *c, CTSS_DSPNode *d,
+                       CTSS_DSPNodeHandler fn) {
+    CTSS_DSPNode *node = ctss_node(id, 1);
+    CTSS_NodeOp4State *state =
+        (CTSS_NodeOp4State *)calloc(1, sizeof(CTSS_NodeOp4State));
     state->bufA = a->buf;
     state->bufB = b->buf;
     state->bufC = c->buf;
@@ -54,22 +56,22 @@ CT_DSPNode *ct_synth_op4(char *id, CT_DSPNode *a, CT_DSPNode *b, CT_DSPNode *c,
     return node;
 }
 
-CT_DSPNode *ct_synth_copy(char *id, CT_DSPNode *src, CT_DSPNode *dest) {
-    CT_DSPNode *node = ct_synth_node(id, 1);
-    CT_NodeOp2State *state =
-        (CT_NodeOp2State *)calloc(1, sizeof(CT_NodeOp2State));
+CTSS_DSPNode *ctss_copy(char *id, CTSS_DSPNode *src, CTSS_DSPNode *dest) {
+    CTSS_DSPNode *node = ctss_node(id, 1);
+    CTSS_NodeOp2State *state =
+        (CTSS_NodeOp2State *)calloc(1, sizeof(CTSS_NodeOp2State));
     state->bufA = src->buf;
     state->bufB = dest->buf;
     node->state = state;
-    node->handler = ct_synth_process_copy;
+    node->handler = ctss_process_copy;
     return node;
 }
 
-uint8_t ct_synth_process_mult(CT_DSPNode *node, CT_DSPStack *stack,
-                              CT_Synth *synth, uint32_t offset) {
+uint8_t ctss_process_mult(CTSS_DSPNode *node, CTSS_DSPStack *stack,
+                          CTSS_Synth *synth, uint32_t offset) {
     CT_UNUSED(synth);
     CT_UNUSED(stack);
-    CT_NodeOp2State *state = (CT_NodeOp2State *)(node->state);
+    CTSS_NodeOp2State *state = (CTSS_NodeOp2State *)(node->state);
     const float *a = state->bufA;
     float *b = state->bufB;
     float *buf = node->buf;
@@ -80,11 +82,11 @@ uint8_t ct_synth_process_mult(CT_DSPNode *node, CT_DSPStack *stack,
     return 0;
 }
 
-uint8_t ct_synth_process_sum(CT_DSPNode *node, CT_DSPStack *stack,
-                             CT_Synth *synth, uint32_t offset) {
+uint8_t ctss_process_sum(CTSS_DSPNode *node, CTSS_DSPStack *stack,
+                         CTSS_Synth *synth, uint32_t offset) {
     CT_UNUSED(synth);
     CT_UNUSED(stack);
-    CT_NodeOp2State *state = (CT_NodeOp2State *)(node->state);
+    CTSS_NodeOp2State *state = (CTSS_NodeOp2State *)(node->state);
     const float *a = state->bufA;
     float *b = state->bufB;
     float *buf = node->buf;
@@ -95,11 +97,11 @@ uint8_t ct_synth_process_sum(CT_DSPNode *node, CT_DSPStack *stack,
     return 0;
 }
 
-uint8_t ct_synth_process_copy(CT_DSPNode *node, CT_DSPStack *stack,
-                              CT_Synth *synth, uint32_t offset) {
+uint8_t ctss_process_copy(CTSS_DSPNode *node, CTSS_DSPStack *stack,
+                          CTSS_Synth *synth, uint32_t offset) {
     CT_UNUSED(synth);
     CT_UNUSED(stack);
-    CT_NodeOp2State *state = (CT_NodeOp2State *)(node->state);
+    CTSS_NodeOp2State *state = (CTSS_NodeOp2State *)(node->state);
     const float *a = state->bufA;
     float *b = state->bufB;
     float *buf = node->buf;
@@ -111,11 +113,11 @@ uint8_t ct_synth_process_copy(CT_DSPNode *node, CT_DSPStack *stack,
     return 0;
 }
 
-uint8_t ct_synth_process_madd(CT_DSPNode *node, CT_DSPStack *stack,
-                              CT_Synth *synth, uint32_t offset) {
+uint8_t ctss_process_madd(CTSS_DSPNode *node, CTSS_DSPStack *stack,
+                          CTSS_Synth *synth, uint32_t offset) {
     CT_UNUSED(synth);
     CT_UNUSED(stack);
-    CT_NodeOp4State *state = (CT_NodeOp4State *)(node->state);
+    CTSS_NodeOp4State *state = (CTSS_NodeOp4State *)(node->state);
     const float *a = state->bufA;
     const float *b = state->bufB;
     const float *c = state->bufC;
@@ -128,11 +130,11 @@ uint8_t ct_synth_process_madd(CT_DSPNode *node, CT_DSPStack *stack,
     return 0;
 }
 
-uint8_t ct_synth_process_madd_const(CT_DSPNode *node, CT_DSPStack *stack,
-                                    CT_Synth *synth, uint32_t offset) {
+uint8_t ctss_process_madd_const(CTSS_DSPNode *node, CTSS_DSPStack *stack,
+                                CTSS_Synth *synth, uint32_t offset) {
     CT_UNUSED(synth);
     CT_UNUSED(stack);
-    CT_NodeOp4CState *state = (CT_NodeOp4CState *)(node->state);
+    CTSS_NodeOp4CState *state = (CTSS_NodeOp4CState *)(node->state);
     const float *a = state->bufA;
     const float *b = state->bufB;
     const float af = state->af;

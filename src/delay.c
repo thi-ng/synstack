@@ -1,9 +1,10 @@
 #include "delay.h"
 
-CT_DSPNode *ct_synth_delay(char *id, CT_DSPNode *src, uint32_t len,
-                           float feedback, uint8_t channels) {
-    CT_DSPNode *node = ct_synth_node(id, channels);
-    CT_DelayState *state = (CT_DelayState *)calloc(1, sizeof(CT_DelayState));
+CTSS_DSPNode *ctss_delay(char *id, CTSS_DSPNode *src, uint32_t len,
+                         float feedback, uint8_t channels) {
+    CTSS_DSPNode *node = ctss_node(id, channels);
+    CTSS_DelayState *state =
+        (CTSS_DelayState *)calloc(1, sizeof(CTSS_DelayState));
     state->delayLine = (float *)calloc(len * channels, sizeof(float));
     state->src = src->buf;
     state->len = len * channels;
@@ -14,15 +15,15 @@ CT_DSPNode *ct_synth_delay(char *id, CT_DSPNode *src, uint32_t len,
     state->writePtr = state->delayLine;
     state->readPtr = state->delayLine + channels;
     node->state = state;
-    node->handler = ct_synth_process_delay;
+    node->handler = ctss_process_delay;
     return node;
 }
 
-uint8_t ct_synth_process_delay(CT_DSPNode *node, CT_DSPStack *stack,
-                               CT_Synth *synth, uint32_t offset) {
+uint8_t ctss_process_delay(CTSS_DSPNode *node, CTSS_DSPStack *stack,
+                           CTSS_Synth *synth, uint32_t offset) {
     CT_UNUSED(synth);
     CT_UNUSED(stack);
-    CT_DelayState *state = (CT_DelayState *)node->state;
+    CTSS_DelayState *state = (CTSS_DelayState *)node->state;
     float *read = state->readPtr;
     float *write = state->writePtr;
     float *src = state->src + offset * state->channels;

@@ -1,24 +1,23 @@
 #include "adsr.h"
 
-CT_DSPNode *ct_synth_adsr(char *id, CT_DSPNode *lfo, float attTime,
-                          float decayTime, float releaseTime, float attGain,
-                          float sustainGain) {
+CTSS_DSPNode *ctss_adsr(char *id, CTSS_DSPNode *lfo, float attTime,
+                        float decayTime, float releaseTime, float attGain,
+                        float sustainGain) {
     sustainGain = (sustainGain > 0.99f ? 0.99f : sustainGain);
-    CT_DSPNode *node = ct_synth_node(id, 1);
-    CT_ADSRState *env = (CT_ADSRState *)calloc(1, sizeof(CT_ADSRState));
-    env->lfo = (lfo != NULL ? lfo->buf : ct_synth_zero);
+    CTSS_DSPNode *node = ctss_node(id, 1);
+    CTSS_ADSRState *env = (CTSS_ADSRState *)calloc(1, sizeof(CTSS_ADSRState));
+    env->lfo = (lfo != NULL ? lfo->buf : ctss_zero);
     node->state = env;
-    node->handler = ct_synth_process_adsr;
-    ct_synth_configure_adsr(node, attTime, decayTime, releaseTime, attGain,
-                            sustainGain);
-    ct_synth_reset_adsr(node);
+    node->handler = ctss_process_adsr;
+    ctss_configure_adsr(node, attTime, decayTime, releaseTime, attGain,
+                        sustainGain);
+    ctss_reset_adsr(node);
     return node;
 }
 
-void ct_synth_configure_adsr(CT_DSPNode *node, float attTime, float decayTime,
-                             float releaseTime, float attGain,
-                             float sustainGain) {
-    CT_ADSRState *env = (CT_ADSRState *)(node->state);
+void ctss_configure_adsr(CTSS_DSPNode *node, float attTime, float decayTime,
+                         float releaseTime, float attGain, float sustainGain) {
+    CTSS_ADSRState *env = (CTSS_ADSRState *)(node->state);
     env->attackRate = TIME_TO_FS_RATE(attTime) * attGain;
     env->decayRate = TIME_TO_FS_RATE(decayTime) * (attGain - sustainGain);
     env->releaseRate = TIME_TO_FS_RATE(releaseTime) * sustainGain;
@@ -26,20 +25,20 @@ void ct_synth_configure_adsr(CT_DSPNode *node, float attTime, float decayTime,
     env->sustainGain = sustainGain;
 }
 
-void ct_synth_reset_adsr(CT_DSPNode *node) {
-    CT_ADSRState *state = (CT_ADSRState *)(node->state);
+void ctss_reset_adsr(CTSS_DSPNode *node) {
+    CTSS_ADSRState *state = (CTSS_ADSRState *)(node->state);
     state->phase = ATTACK;
     state->currGain = 0.0f;
 }
 
-uint8_t ct_synth_process_adsr(CT_DSPNode *node, CT_DSPStack *stack,
-                              CT_Synth *synth, uint32_t offset) {
+uint8_t ctss_process_adsr(CTSS_DSPNode *node, CTSS_DSPStack *stack,
+                          CTSS_Synth *synth, uint32_t offset) {
     CT_UNUSED(synth);
     CT_UNUSED(stack);
-    CT_ADSRState *state = (CT_ADSRState *)(node->state);
+    CTSS_ADSRState *state = (CTSS_ADSRState *)(node->state);
     float *buf = node->buf + offset;
     float *envMod = state->lfo;
-    // CT_ADSRPhase prevPhase = state->phase;
+    // CTSS_ADSRPhase prevPhase = state->phase;
     uint32_t len = AUDIO_BUFFER_SIZE - offset;
     if (envMod != NULL) {
         envMod += offset;

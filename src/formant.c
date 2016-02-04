@@ -25,23 +25,23 @@ static const double formant_filter_coeff[5 * 11] = {
     183.7080141, -153.2631681, 89.59539726, -35.12454591, 8.338655623,
     -0.910251753};
 
-CT_DSPNode *ct_synth_filter_formant(char *id, CT_Formant formant,
-                                    CT_DSPNode *src) {
-    CT_DSPNode *node = ct_synth_node(id, 1);
-    CT_FormantState *state =
-        (CT_FormantState *)calloc(1, sizeof(CT_FormantState));
+CTSS_DSPNode *ctss_filter_formant(char *id, CTSS_Formant formant,
+                                  CTSS_DSPNode *src) {
+    CTSS_DSPNode *node = ctss_node(id, 1);
+    CTSS_FormantState *state =
+        (CTSS_FormantState *)calloc(1, sizeof(CTSS_FormantState));
     state->src = src->buf;
     state->type = formant;
     node->state = state;
-    node->handler = ct_synth_process_formant;
+    node->handler = ctss_process_formant;
     return node;
 }
 
-uint8_t ct_synth_process_formant(CT_DSPNode *node, CT_DSPStack *stack,
-                                 CT_Synth *synth, uint32_t offset) {
+uint8_t ctss_process_formant(CTSS_DSPNode *node, CTSS_DSPStack *stack,
+                             CTSS_Synth *synth, uint32_t offset) {
     CT_UNUSED(synth);
     CT_UNUSED(stack);
-    CT_FormantState *state = (CT_FormantState *)node->state;
+    CTSS_FormantState *state = (CTSS_FormantState *)node->state;
     const float *src = state->src + offset;
     float *buf = node->buf + offset;
     double *coeff_ptr = &formant_filter_coeff[state->type * 11];
@@ -137,7 +137,7 @@ static float formant_carrier(const float h, const float p) {
     return c0 + hf * (c1 - c0);
 }
 
-void ct_synth_preinit_osc_formant(void) {
+void ctss_preinit_osc_formant(void) {
     const float coeff = 2.0f / (FORMANT_TABLE_LEN - 1);
     for (uint32_t i = 0; i < FORMANT_WIDTH; i++) {
         for (uint32_t p = 0; p < FORMANT_TABLE_LEN; p++) {
@@ -147,16 +147,17 @@ void ct_synth_preinit_osc_formant(void) {
     }
 }
 
-CT_DSPNode *ct_synth_osc_formant_id(char *id, uint8_t formant, float freq,
-                                    float gain, float dc, float smooth) {
-    return ct_synth_osc_formant(id, &formant_osc_fa[formant << 3], freq, gain,
-                                dc, smooth);
+CTSS_DSPNode *ctss_osc_formant_id(char *id, uint8_t formant, float freq,
+                                  float gain, float dc, float smooth) {
+    return ctss_osc_formant(id, &formant_osc_fa[formant << 3], freq, gain, dc,
+                            smooth);
 }
 
-CT_DSPNode *ct_synth_osc_formant(char *id, float *formant, float freq,
-                                 float gain, float dc, float smooth) {
-    CT_DSPNode *node = ct_synth_node(id, 1);
-    CT_FormantOsc *osc = (CT_FormantOsc *)calloc(1, sizeof(CT_FormantOsc));
+CTSS_DSPNode *ctss_osc_formant(char *id, float *formant, float freq, float gain,
+                               float dc, float smooth) {
+    CTSS_DSPNode *node = ctss_node(id, 1);
+    CTSS_FormantOsc *osc =
+        (CTSS_FormantOsc *)calloc(1, sizeof(CTSS_FormantOsc));
     osc->phase = -1.0f;
     osc->freq = freq;
     osc->gain = gain;
@@ -172,20 +173,20 @@ CT_DSPNode *ct_synth_osc_formant(char *id, float *formant, float freq,
     osc->f[6] = 0.0f;
     osc->f[7] = 0.0f;
     node->state = osc;
-    node->handler = ct_synth_process_osc_formant;
+    node->handler = ctss_process_osc_formant;
     return node;
 }
 
-void ct_synth_set_formant_id(CT_DSPNode *node, uint8_t id) {
-    CT_FormantOsc *state = (CT_FormantOsc *)(node->state);
+void ctss_set_formant_id(CTSS_DSPNode *node, uint8_t id) {
+    CTSS_FormantOsc *state = (CTSS_FormantOsc *)(node->state);
     state->coeff = &formant_osc_fa[id << 3];
 }
 
-uint8_t ct_synth_process_osc_formant(CT_DSPNode *node, CT_DSPStack *stack,
-                                     CT_Synth *synth, uint32_t offset) {
+uint8_t ctss_process_osc_formant(CTSS_DSPNode *node, CTSS_DSPStack *stack,
+                                 CTSS_Synth *synth, uint32_t offset) {
     CT_UNUSED(synth);
     CT_UNUSED(stack);
-    CT_FormantOsc *state = (CT_FormantOsc *)(node->state);
+    CTSS_FormantOsc *state = (CTSS_FormantOsc *)(node->state);
     const float freq = RAD_TO_HZ(state->freq);
     const float pf = freq * INV_NYQUIST_FREQ;
     const float invF = 1.0f / freq;

@@ -15,7 +15,7 @@ uint8_t demo(AppState *app) {
         goto error;
     }
 
-    ct_synth_collect_stacks(&app->synth);
+    ctss_collect_stacks(&app->synth);
     app->voiceID = 0;
     app->noteID = 0;
     app->time = 0;
@@ -67,33 +67,33 @@ void demo_key_handler(AppState *app, char ch) {
     switch (ch) {
     case '-':
         for (uint8_t i = 0; i < app->synth.numStacks; i++) {
-            CT_DelayState *s =
-                (CT_DelayState *)(NODE_ID(&app->synth.stacks[i], "delay")
-                                      ->state);
+            CTSS_DelayState *s =
+                (CTSS_DelayState *)(NODE_ID(&app->synth.stacks[i], "delay")
+                                        ->state);
             s->feedback -= 0.1f;
             if (s->feedback <= 0) {
                 s->feedback = 0;
             }
         }
-        mvprintw(
-            1, 2, "feedback: %f",
-            ((CT_DelayState *)(NODE_ID(&app->synth.stacks[0], "delay")->state))
-                ->feedback);
+        mvprintw(1, 2, "feedback: %f",
+                 ((CTSS_DelayState *)(NODE_ID(&app->synth.stacks[0], "delay")
+                                          ->state))
+                     ->feedback);
         break;
     case '=':
         for (uint8_t i = 0; i < app->synth.numStacks; i++) {
-            CT_DelayState *s =
-                (CT_DelayState *)(NODE_ID(&app->synth.stacks[i], "delay")
-                                      ->state);
+            CTSS_DelayState *s =
+                (CTSS_DelayState *)(NODE_ID(&app->synth.stacks[i], "delay")
+                                        ->state);
             s->feedback += 0.1f;
             if (s->feedback >= 1.0) {
                 s->feedback = 1.0;
             }
         }
-        mvprintw(
-            1, 2, "feedback: %f",
-            ((CT_DelayState *)(NODE_ID(&app->synth.stacks[0], "delay")->state))
-                ->feedback);
+        mvprintw(1, 2, "feedback: %f",
+                 ((CTSS_DelayState *)(NODE_ID(&app->synth.stacks[0], "delay")
+                                          ->state))
+                     ->feedback);
         break;
     case '[':
         app->pitch -= 2;

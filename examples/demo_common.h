@@ -27,7 +27,7 @@ typedef struct AppState AppState;
 typedef void (*DemoKeyHandler)(AppState *app, char ch);
 
 struct AppState {
-    CT_Synth synth;
+    CTSS_Synth synth;
     DemoRenderFn *callback;
     DemoKeyHandler handler;
     uint8_t isNewNote;

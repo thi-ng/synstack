@@ -10,10 +10,10 @@ typedef struct {
     float cutoffFreq;
     float cutoffCoeff;
     float resonance;
-} CT_Filter4PoleState;
+} CTSS_Filter4PoleState;
 
-CT_DSPNode *ct_synth_filter_4pole(char *id, CT_DSPNode *src, CT_DSPNode *lfo,
-                                  float cutoff, float reso, float coeff);
+CTSS_DSPNode *ctss_filter_4pole(char *id, CTSS_DSPNode *src, CTSS_DSPNode *lfo,
+                                float cutoff, float reso, float coeff);
 
-uint8_t ct_synth_process_filter4p(CT_DSPNode *node, CT_DSPStack *stack,
-                                  CT_Synth *synth, uint32_t offset);
+uint8_t ctss_process_4pole(CTSS_DSPNode *node, CTSS_DSPStack *stack,
+                              CTSS_Synth *synth, uint32_t offset);

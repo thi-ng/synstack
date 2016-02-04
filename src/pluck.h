@@ -17,12 +17,12 @@ typedef struct {
     int32_t impulse;
     uint32_t phase;
     uint16_t len;
-} CT_PluckOsc;
+} CTSS_PluckOsc;
 
-CT_DSPNode *ct_synth_osc_pluck(char *id, float freq, float impTime, float gain,
-                               float dc);
-void ct_synth_reset_pluck(CT_DSPNode *node, float freq, float impTime,
-                          float coeff);
+CTSS_DSPNode *ctss_osc_pluck(char *id, float freq, float impTime, float gain,
+                             float dc);
+void ctss_reset_pluck(CTSS_DSPNode *node, float freq, float impTime,
+                      float coeff);
 
-uint8_t ct_synth_process_pluck(CT_DSPNode *node, CT_DSPStack *stack,
-                               CT_Synth *synth, uint32_t offset);
+uint8_t ctss_process_pluck(CTSS_DSPNode *node, CTSS_DSPStack *stack,
+                           CTSS_Synth *synth, uint32_t offset);

@@ -12,10 +12,10 @@ typedef struct {
     uint32_t len;
     float feedback;
     uint8_t channels;
-} CT_DelayState;
+} CTSS_DelayState;
 
-CT_DSPNode *ct_synth_delay(char *id, CT_DSPNode *src, uint32_t len,
-                           float feedback, uint8_t channels);
+CTSS_DSPNode *ctss_delay(char *id, CTSS_DSPNode *src, uint32_t len,
+                         float feedback, uint8_t channels);
 
-uint8_t ct_synth_process_delay(CT_DSPNode *node, CT_DSPStack *stack,
-                               CT_Synth *synth, uint32_t offset);
+uint8_t ctss_process_delay(CTSS_DSPNode *node, CTSS_DSPStack *stack,
+                           CTSS_Synth *synth, uint32_t offset);

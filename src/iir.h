@@ -2,7 +2,7 @@
 
 #include "synth.h"
 
-typedef enum { IIR_LP = 0, IIR_HP, IIR_BP, IIR_BR } IIRType;
+typedef enum { IIR_LP = 0, IIR_HP, IIR_BP, IIR_BR } CTSS_IIRType;
 
 typedef struct {
     const float *src;
@@ -12,16 +12,16 @@ typedef struct {
     float resonance;
     float freq;
     float damp;
-    IIRType type;
-} CT_IIRState;
+    CTSS_IIRType type;
+} CTSS_IIRState;
 
-CT_DSPNode *ct_synth_filter_iir(char *id, IIRType type, CT_DSPNode *src,
-                                CT_DSPNode *lfo, float cutoff, float reso);
+CTSS_DSPNode *ctss_filter_iir(char *id, CTSS_IIRType type, CTSS_DSPNode *src,
+                              CTSS_DSPNode *lfo, float cutoff, float reso);
 
-void ct_synth_calculate_iir_coeff(CT_DSPNode *node, float cutoff, float reso);
+void ctss_calculate_iir_coeff(CTSS_DSPNode *node, float cutoff, float reso);
 
-uint8_t ct_synth_process_iir(CT_DSPNode *node, CT_DSPStack *stack,
-                             CT_Synth *synth, uint32_t offset);
+uint8_t ctss_process_iir(CTSS_DSPNode *node, CTSS_DSPStack *stack,
+                         CTSS_Synth *synth, uint32_t offset);
 
-float ct_synth_bassboost(float x, const float sel, const float amp,
-                         const float wet);
+float ctss_bassboost(float x, const float sel, const float amp,
+                     const float wet);

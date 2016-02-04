@@ -2,7 +2,7 @@
 #include <string.h>
 #include "synth.h"
 
-void ct_synth_free_node_state(CT_DSPNode *node) {
+void ctss_free_node_state(CTSS_DSPNode *node) {
     if (node->state != NULL) {
         printf("free node state...\n");
         free(node->state);
@@ -10,100 +10,97 @@ void ct_synth_free_node_state(CT_DSPNode *node) {
     }
 }
 
-void synth_free_node(CT_DSPNode *node) {
+void ctss_free_node(CTSS_DSPNode *node) {
     printf("free node: %s\n", node->id);
-    ct_synth_free_node_state(node);
+    ctss_free_node_state(node);
     free(node);
 }
 
-void ct_synth_init(CT_Synth *synth, uint8_t numStacks) {
-    memset((void *)ct_synth_zero, 0, sizeof(float) * AUDIO_BUFFER_SIZE);
-    synth->stacks = (CT_DSPStack *)calloc(numStacks, sizeof(CT_DSPStack));
+void ctss_init(CTSS_Synth *synth, uint8_t numStacks) {
+    memset((void *)ctss_zero, 0, sizeof(float) * AUDIO_BUFFER_SIZE);
+    synth->stacks = (CTSS_DSPStack *)calloc(numStacks, sizeof(CTSS_DSPStack));
     synth->stackOutputs = (float **)calloc(numStacks, sizeof(float *));
     synth->numStacks = numStacks;
 }
 
-void ct_synth_init_stack(CT_DSPStack *stack) {
-    CT_DSPNode *node = stack->startNode;
-    CT_DSPNode *next;
+void ctss_init_stack(CTSS_DSPStack *stack) {
+    CTSS_DSPNode *node = stack->startNode;
+    CTSS_DSPNode *next;
     while (node != NULL) {
         next = node->next;
-        synth_free_node(node);
+        ctss_free_node(node);
         node = next;
     }
     stack->startNode = NULL;
     stack->flags = 0;
 }
 
-void ct_synth_build_stack(CT_DSPStack *stack, CT_DSPNode **nodes,
-                          uint8_t length) {
+void ctss_build_stack(CTSS_DSPStack *stack, CTSS_DSPNode **nodes,
+                      uint8_t length) {
     while (length--) {
-        ct_synth_stack_append(stack, *nodes++);
+        ctss_stack_append(stack, *nodes++);
     }
-    ct_synth_activate_stack(stack);
+    ctss_activate_stack(stack);
 }
 
-void ct_synth_activate_stack(CT_DSPStack *stack) {
+void ctss_activate_stack(CTSS_DSPStack *stack) {
     stack->flags = STACK_ACTIVE;
 }
 
-void ct_synth_collect_stacks(CT_Synth *synth) {
+void ctss_collect_stacks(CTSS_Synth *synth) {
     for (uint8_t i = 0; i < synth->numStacks; i++) {
-        CT_DSPStack *s = &synth->stacks[i];
-        synth->stackOutputs[i] = ct_synth_stack_last_node(s)->buf;
+        CTSS_DSPStack *s = &synth->stacks[i];
+        synth->stackOutputs[i] = ctss_stack_last_node(s)->buf;
         s->flags = 0;
     }
 }
 
-void ct_synth_update_mix_mono_i16(CT_Synth *synth, uint32_t frames,
-                                  int16_t *out) {
+void ctss_update_mix_mono_i16(CTSS_Synth *synth, uint32_t frames,
+                              int16_t *out) {
     for (uint32_t i = 0, num = frames / AUDIO_BUFFER_SIZE; i < num; i++) {
-        ct_synth_update(synth);
-        ct_synth_mixdown_i16(synth->stackOutputs, &out[i * AUDIO_BUFFER_SIZE],
-                             0, AUDIO_BUFFER_SIZE, synth->numStacks, 1);
+        ctss_update(synth);
+        ctss_mixdown_i16(synth->stackOutputs, &out[i * AUDIO_BUFFER_SIZE], 0,
+                         AUDIO_BUFFER_SIZE, synth->numStacks, 1);
     }
 }
 
-void ct_synth_update_mix_stereo_i16(CT_Synth *synth, uint32_t frames,
-                                    int16_t *out) {
+void ctss_update_mix_stereo_i16(CTSS_Synth *synth, uint32_t frames,
+                                int16_t *out) {
     for (uint32_t i = 0, num = frames / AUDIO_BUFFER_SIZE; i < num; i++) {
-        ct_synth_update(synth);
-        ct_synth_mixdown_i16(synth->stackOutputs, &out[i * AUDIO_BUFFER_SIZE2],
-                             0, AUDIO_BUFFER_SIZE, synth->numStacks, 2);
-        ct_synth_mixdown_i16(synth->stackOutputs,
-                             &out[i * AUDIO_BUFFER_SIZE2 + 1], 1,
-                             AUDIO_BUFFER_SIZE, synth->numStacks, 2);
+        ctss_update(synth);
+        ctss_mixdown_i16(synth->stackOutputs, &out[i * AUDIO_BUFFER_SIZE2], 0,
+                         AUDIO_BUFFER_SIZE, synth->numStacks, 2);
+        ctss_mixdown_i16(synth->stackOutputs, &out[i * AUDIO_BUFFER_SIZE2 + 1],
+                         1, AUDIO_BUFFER_SIZE, synth->numStacks, 2);
     }
 }
 
-void ct_synth_update_mix_mono_f32(CT_Synth *synth, uint32_t frames,
-                                  float *out) {
+void ctss_update_mix_mono_f32(CTSS_Synth *synth, uint32_t frames, float *out) {
     for (uint32_t i = 0, num = frames / AUDIO_BUFFER_SIZE; i < num; i++) {
-        ct_synth_update(synth);
-        ct_synth_mixdown_f32(synth->stackOutputs, &out[i * AUDIO_BUFFER_SIZE],
-                             0, AUDIO_BUFFER_SIZE, synth->numStacks, 1);
+        ctss_update(synth);
+        ctss_mixdown_f32(synth->stackOutputs, &out[i * AUDIO_BUFFER_SIZE], 0,
+                         AUDIO_BUFFER_SIZE, synth->numStacks, 1);
     }
 }
 
-void ct_synth_update_mix_stereo_f32(CT_Synth *synth, uint32_t frames,
-                                    float *out) {
+void ctss_update_mix_stereo_f32(CTSS_Synth *synth, uint32_t frames,
+                                float *out) {
     for (uint32_t i = 0, num = frames / AUDIO_BUFFER_SIZE; i < num; i++) {
-        ct_synth_update(synth);
-        ct_synth_mixdown_f32(synth->stackOutputs, &out[i * AUDIO_BUFFER_SIZE2],
-                             0, AUDIO_BUFFER_SIZE, synth->numStacks, 2);
-        ct_synth_mixdown_f32(synth->stackOutputs,
-                             &out[i * AUDIO_BUFFER_SIZE2 + 1], 1,
-                             AUDIO_BUFFER_SIZE, synth->numStacks, 2);
+        ctss_update(synth);
+        ctss_mixdown_f32(synth->stackOutputs, &out[i * AUDIO_BUFFER_SIZE2], 0,
+                         AUDIO_BUFFER_SIZE, synth->numStacks, 2);
+        ctss_mixdown_f32(synth->stackOutputs, &out[i * AUDIO_BUFFER_SIZE2 + 1],
+                         1, AUDIO_BUFFER_SIZE, synth->numStacks, 2);
     }
 }
 
-CT_DSPNode *ct_synth_node(char *id, uint8_t channels) {
-    CT_DSPNode *node = (CT_DSPNode *)calloc(1, sizeof(CT_DSPNode));
-    ct_synth_init_node(node, id, channels);
+CTSS_DSPNode *ctss_node(char *id, uint8_t channels) {
+    CTSS_DSPNode *node = (CTSS_DSPNode *)calloc(1, sizeof(CTSS_DSPNode));
+    ctss_init_node(node, id, channels);
     return node;
 }
 
-void ct_synth_init_node(CT_DSPNode *node, char *id, uint8_t channels) {
+void ctss_init_node(CTSS_DSPNode *node, char *id, uint8_t channels) {
     if (node->buf != NULL) {
         free(node->buf);
     }
@@ -115,16 +112,16 @@ void ct_synth_init_node(CT_DSPNode *node, char *id, uint8_t channels) {
     strcpy(node->id, id);
 }
 
-CT_DSPNode *ct_synth_stack_last_node(CT_DSPStack *stack) {
-    CT_DSPNode *node = stack->startNode;
+CTSS_DSPNode *ctss_stack_last_node(CTSS_DSPStack *stack) {
+    CTSS_DSPNode *node = stack->startNode;
     while (node->next != NULL) {
         node = node->next;
     }
     return node;
 }
 
-CT_DSPNode *ct_synth_node_for_id(CT_DSPStack *stack, const char *id) {
-    CT_DSPNode *node = stack->startNode;
+CTSS_DSPNode *ctss_node_for_id(CTSS_DSPStack *stack, const char *id) {
+    CTSS_DSPNode *node = stack->startNode;
     do {
         if (strcmp(id, node->id) == 0) {
             return node;
@@ -134,18 +131,18 @@ CT_DSPNode *ct_synth_node_for_id(CT_DSPStack *stack, const char *id) {
     return node;
 }
 
-void ct_synth_stack_append(CT_DSPStack *stack, CT_DSPNode *node) {
+void ctss_stack_append(CTSS_DSPStack *stack, CTSS_DSPNode *node) {
     if (stack->startNode == NULL) {
         stack->startNode = node;
     } else {
-        ct_synth_stack_last_node(stack)->next = node;
+        ctss_stack_last_node(stack)->next = node;
     }
 }
 
-void ct_synth_process_stack(CT_DSPStack *stack, CT_Synth *synth,
-                            uint32_t offset) {
+void ctss_process_stack(CTSS_DSPStack *stack, CTSS_Synth *synth,
+                        uint32_t offset) {
     if (stack->flags & STACK_ACTIVE) {
-        CT_DSPNode *node = stack->startNode;
+        CTSS_DSPNode *node = stack->startNode;
         uint8_t flags = 0;
         while (1) {
             if (node->flags & NODE_ACTIVE) {
@@ -160,7 +157,7 @@ void ct_synth_process_stack(CT_DSPStack *stack, CT_Synth *synth,
     }
 }
 
-void ct_synth_trace_node(CT_DSPNode *node) {
+void ctss_trace_node(CTSS_DSPNode *node) {
     printf("-- %s --\n", node->id);
     for (int i = 0; i < AUDIO_BUFFER_SIZE; i++) {
         printf("%03d: %f, ", i, node->buf[i]);
@@ -168,10 +165,10 @@ void ct_synth_trace_node(CT_DSPNode *node) {
     printf("\n");
 }
 
-void ct_synth_trace_stack(CT_DSPStack *stack) {
-    CT_DSPNode *node = stack->startNode;
+void ctss_trace_stack(CTSS_DSPStack *stack) {
+    CTSS_DSPNode *node = stack->startNode;
     while (1) {
-        ct_synth_trace_node(node);
+        ctss_trace_node(node);
         if (node->next == NULL) {
             break;
         }
@@ -179,21 +176,20 @@ void ct_synth_trace_stack(CT_DSPStack *stack) {
     }
 }
 
-void ct_synth_update(CT_Synth *synth) {
+void ctss_update(CTSS_Synth *synth) {
     for (uint8_t i = 0; i < synth->numLFO; i++) {
         synth->lfo[i]->handler(synth->lfo[i], NULL, synth, 0);
     }
-    CT_DSPStack *s = synth->stacks;
+    CTSS_DSPStack *s = synth->stacks;
     for (uint8_t i = synth->numStacks; i > 0; i--, s++) {
         if (s->flags & STACK_ACTIVE) {
-            ct_synth_process_stack(s, synth, 0);
+            ctss_process_stack(s, synth, 0);
         }
     }
 }
 
-void ct_synth_mixdown_i16(float **sources, int16_t *out, uint32_t offset,
-                          uint32_t len, const uint8_t num,
-                          const uint8_t stride) {
+void ctss_mixdown_i16(float **sources, int16_t *out, uint32_t offset,
+                      uint32_t len, const uint8_t num, const uint8_t stride) {
     while (len--) {
         float sum = 0;
         uint32_t n = num;
@@ -206,9 +202,8 @@ void ct_synth_mixdown_i16(float **sources, int16_t *out, uint32_t offset,
     }
 }
 
-void ct_synth_mixdown_f32(float **sources, float *out, uint32_t offset,
-                          uint32_t len, const uint8_t num,
-                          const uint8_t stride) {
+void ctss_mixdown_f32(float **sources, float *out, uint32_t offset,
+                      uint32_t len, const uint8_t num, const uint8_t stride) {
     while (len--) {
         float sum = 0;
         uint32_t n = num;

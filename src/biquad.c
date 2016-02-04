@@ -2,24 +2,24 @@
 #include "biquad.h"
 
 /* sets up a BiQuad Filter */
-CT_DSPNode *ct_synth_filter_biquad(char *id, CT_BiquadType type,
-                                   CT_DSPNode *src, float freq, float dbGain,
-                                   float bandwidth) {
-    CT_DSPNode *node = ct_synth_node(id, 1);
-    CT_BiquadState *state = (CT_BiquadState *)calloc(1, sizeof(CT_BiquadState));
+CTSS_DSPNode *ctss_filter_biquad(char *id, CTSS_BiquadType type,
+                                 CTSS_DSPNode *src, float freq, float dbGain,
+                                 float bandwidth) {
+    CTSS_DSPNode *node = ctss_node(id, 1);
+    CTSS_BiquadState *state =
+        (CTSS_BiquadState *)calloc(1, sizeof(CTSS_BiquadState));
     state->src = &src->buf[0];
-    // state->lfo = (lfo != NULL ? &lfo->buf[0] : ct_synth_zero);
+    // state->lfo = (lfo != NULL ? &lfo->buf[0] : ctss_zero);
     state->type = type;
     node->state = state;
-    node->handler = ct_synth_process_biquad;
-    ct_synth_calculate_biquad_coeff(node, type, freq, dbGain, bandwidth);
+    node->handler = ctss_process_biquad;
+    ctss_calculate_biquad_coeff(node, type, freq, dbGain, bandwidth);
     return node;
 }
 
-void ct_synth_calculate_biquad_coeff(CT_DSPNode *node, CT_BiquadType type,
-                                     float freq, float dbGain,
-                                     float bandwidth) {
-    CT_BiquadState *state = (CT_BiquadState *)node->state;
+void ctss_calculate_biquad_coeff(CTSS_DSPNode *node, CTSS_BiquadType type,
+                                 float freq, float dbGain, float bandwidth) {
+    CTSS_BiquadState *state = (CTSS_BiquadState *)node->state;
     float a0, a1, a2, b0, b1, b2;
 
     float A = powf(10.0f, dbGain / 40.0f);
@@ -100,11 +100,11 @@ void ct_synth_calculate_biquad_coeff(CT_DSPNode *node, CT_BiquadType type,
     state->f[5] = state->f[6] = state->f[7] = state->f[8] = 0.0f;
 }
 
-uint8_t ct_synth_process_biquad(CT_DSPNode *node, CT_DSPStack *stack,
-                                CT_Synth *synth, uint32_t offset) {
+uint8_t ctss_process_biquad(CTSS_DSPNode *node, CTSS_DSPStack *stack,
+                            CTSS_Synth *synth, uint32_t offset) {
     CT_UNUSED(synth);
     CT_UNUSED(stack);
-    CT_BiquadState *state = (CT_BiquadState *)node->state;
+    CTSS_BiquadState *state = (CTSS_BiquadState *)node->state;
     const float *src = state->src + offset;
     float *buf = node->buf + offset;
     float *f = state->f;
