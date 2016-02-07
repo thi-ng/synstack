@@ -8,6 +8,18 @@
 // Stackbased audio synthesizer DSL // http://thi.ng/synstack
 // (c) 2015-2016 Karsten Schmidt    // ASL2.0 licensed
 
+//      =======
+//   =======
+// =======
+// =======
+//   =======
+//      =======
+//         =======
+//           =======
+//           =======
+//         =======
+//      =======
+
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
@@ -45,7 +57,8 @@ typedef void (*CTSS_VMOp)(CTSS_VM *vm);
 
 typedef enum {
     CTSS_VM_FLAG_HIDDEN = 1,
-    CTSS_VM_FLAG_IMMEDIATE = 2
+    CTSS_VM_FLAG_IMMEDIATE = 2,
+    CTSS_VM_FLAG_NATIVE = 4,
 } CTSS_VMFlag;
 
 typedef enum { CTSS_VM_ERR_OK = 0, CTSS_VM_ERR_UNKNOWN_WORD = 1 } CTSS_VMError;
@@ -67,11 +80,11 @@ union CTSS_VMValue {
 
 struct CTSS_VM {
     CTSS_VMValue ds[CTSS_VM_DS_SIZE];
-    CTSS_VMValue *rs[CTSS_VM_RS_SIZE];
+    CTSS_VMValue rs[CTSS_VM_RS_SIZE];
     CTSS_VMValue *ip;
     CTSS_VMValue *np;
     CTSS_VMValue *dsp;
-    CTSS_VMValue **rsp;
+    CTSS_VMValue *rsp;
     CTSS_VMValue *latest;
     CTSS_VMValue *here;
     CTSS_VMValue mem[CTSS_VM_MEM_SIZE];
@@ -119,12 +132,12 @@ static inline CTSS_VMValue *ctss_vm_pop_ds(CTSS_VM *vm) {
     return --vm->dsp;
 }
 
-static inline void ctss_vm_push_rs(CTSS_VM *vm, CTSS_VMValue *addr) {
-    *vm->rsp++ = addr;
+static inline void ctss_vm_push_rs(CTSS_VM *vm, CTSS_VMValue v) {
+    *vm->rsp++ = v;
 }
 
 static inline CTSS_VMValue *ctss_vm_pop_rs(CTSS_VM *vm) {
-    return *(--vm->rsp);
+    return --vm->rsp;
 }
 
 static inline void ctss_vm_push_mem(CTSS_VM *vm, CTSS_VMValue v) {
@@ -162,7 +175,7 @@ static inline void ctss_vm_interpret_mode(CTSS_VM *vm) {
 }
 
 static inline void ctss_vm_compile_mode(CTSS_VM *vm) {
-  CTSS_LOG(("<compiling>\n"));
+    CTSS_LOG(("<compiling>\n"));
     vm->mode = 1;
 }
 
@@ -273,7 +286,7 @@ char *ctss_vm_buffer_token(CTSS_VM *vm, char *token) {
 }
 
 void ctss_vm_docolon(CTSS_VM *vm) {
-    ctss_vm_push_rs(vm, vm->np);
+    ctss_vm_push_rs(vm, *vm->np);
     vm->np = vm->ip + 1;
     ctss_vm_next(vm);
 }
@@ -504,7 +517,7 @@ CTSS_DECL_OP(rot_inv) {
 }
 
 CTSS_DECL_OP(rpush) {
-    ctss_vm_push_rs(vm, ctss_vm_pop_ds(vm));
+    ctss_vm_push_rs(vm, *ctss_vm_pop_ds(vm));
     ctss_vm_next(vm);
 }
 
@@ -582,23 +595,23 @@ CTSS_DECL_CMP_OP(eq, ==, f32, float)
 CTSS_DECL_CMP_OP(neq, !=, f32, float)
 
 CTSS_DECL_OP(i32_f32) {
-  (*(vm->dsp -1)).f32 = (float)((*(vm->dsp -1)).i32);
-  ctss_vm_next(vm);
+    (*(vm->dsp - 1)).f32 = (float)((*(vm->dsp - 1)).i32);
+    ctss_vm_next(vm);
 }
 
 CTSS_DECL_OP(f32_i32) {
-  (*(vm->dsp - 1)).i32 = (int32_t)((*(vm->dsp -1)).f32);
-  ctss_vm_next(vm);
+    (*(vm->dsp - 1)).i32 = (int32_t)((*(vm->dsp - 1)).f32);
+    ctss_vm_next(vm);
 }
 
 CTSS_DECL_OP(sinf) {
-  (*(vm->dsp -1)).f32 = sinf((*(vm->dsp -1)).f32);
-  ctss_vm_next(vm);
+    (*(vm->dsp - 1)).f32 = sinf((*(vm->dsp - 1)).f32);
+    ctss_vm_next(vm);
 }
 
 CTSS_DECL_OP(cosf) {
-  (*(vm->dsp -1)).f32 = cosf((*(vm->dsp -1)).f32);
-  ctss_vm_next(vm);
+    (*(vm->dsp - 1)).f32 = cosf((*(vm->dsp - 1)).f32);
+    ctss_vm_next(vm);
 }
 
 void ctss_vm_dump_words(CTSS_VM *vm) {
@@ -619,8 +632,8 @@ void ctss_vm_dump_ds(CTSS_VM *vm) {
 }
 
 void ctss_vm_dump_rs(CTSS_VM *vm) {
-    for (CTSS_VMValue **i = vm->rsp - 1; i >= vm->rs; i--) {
-        printf("<%p> %p\n", i, (**i).addr);
+    for (CTSS_VMValue *i = vm->rsp - 1; i >= vm->rs; i--) {
+        printf("<%p> %p\n", i, (*i).addr);
     }
     printf("--\n");
 }
@@ -723,10 +736,10 @@ void ctss_vm_init_primitives(CTSS_VM *vm) {
     CTSS_DEFNATIVE(">=f", cmp_ge_f32);
     CTSS_DEFNATIVE("==f", cmp_eq_f32);
     CTSS_DEFNATIVE("!=f", cmp_neq_f32);
-    
+
     CTSS_DEFNATIVE("i>f", i32_f32);
     CTSS_DEFNATIVE("f>i", f32_i32);
-    
+
     CTSS_DEFNATIVE("sinf", sinf);
     CTSS_DEFNATIVE("cosf", cosf);
 
@@ -753,11 +766,9 @@ int main() {
     ctss_vm_dump_words(&vm);
     // ctss_vm_dump_ds(&vm);
 
-    
-    ctss_vm_interpret(&vm, ctss_vm_core_dict);
+    // ctss_vm_interpret(&vm, ctss_vm_core_dict);
     ctss_vm_interpret(
-        &vm,
-        ": pi 3.1415926f ; : madd rot- * + ; 3 5 0xa madd pi cosf");
+        &vm, ": pi 3.1415926f ; : madd rot- * + ; 3 5 0xa madd pi cosf");
     ctss_vm_dump(&vm);
     ctss_vm_dump_ds(&vm);
     ctss_vm_dump_rs(&vm);
