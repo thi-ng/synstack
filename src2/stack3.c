@@ -1,3 +1,4 @@
+//           =====
 //      =======                                __                 __
 //   =======      _________.__. ____   _______/  |______    ____ |  | __
 // =======       /  ___<   |  |/    \ /  ___/\   __\__  \ _/ ___\|  |/ /
@@ -5,10 +6,11 @@
 //   =======    /____  >/ ____|___|  /____  > |__| (____  /\___  >__|_ \
 //      =======      \/ \/         \/     \/            \/     \/     \/
 //         =======
-//           =======  A Forth-like audio synthesizer DSL
-//           =======  http://thi.ng/synstack
-//         =======    (c) 2015-2016 Karsten Schmidt // ASL2.0 licensed
+//           =======    A Forth-based audio synthesizer DSL
+//           =======    http://thi.ng/synstack
+//         =======      (c) 2015-2016 Karsten Schmidt // ASL2.0 licensed
 //      =======
+//   =====
 
 #include <stdint.h>
 #include <stdio.h>
@@ -19,21 +21,84 @@
 
 #include "core_dict.h"
 
-//#define CTSS_VM_TRACE
+#define CTSS_VM_FEATURE_PRINT
+//#define CTSS_VM_FEATURE_TRACE
+#define CTSS_VM_FEATURE_BOUNDS
 
-#ifdef CTSS_VM_TRACE
-#define CTSS_LOG(expr) printf expr
+#ifdef CTSS_VM_FEATURE_PRINT
+
+#ifndef CTSS_PRINT_FN
+#define CTSS_PRINT_FN printf
+#endif /* CTSS_PRINT_FN */
+
+#define CTSS_PRINT(expr) CTSS_PRINT_FN expr
+
+#ifdef CTSS_VM_FEATURE_TRACE
+#define CTSS_TRACE(expr) CTSS_PRINT_FN expr
 #else
-#define CTSS_LOG(expr)
+#define CTSS_TRACE(expr)
+#endif /* CTSS_VM_FEATURE_TRACE */
+
+#else /* CTSS_VM_FEATURE_PRINT */
+
+#define CTSS_PRINT_FN(expr)
+#define CTSS_TRACE(expr)
+
+#endif /* CTSS_VM_FEATURE_PRINT */
+
+#ifdef CTSS_VM_FEATURE_BOUNDS
+#define CTSS_VM_BOUNDS_CHECK_LO(ptr, stack, id, x)                             \
+    if (vm->ptr < vm->stack + x) {                                             \
+        vm->error = CTSS_VM_ERR_##id##_UNDERFLOW;                              \
+        return;                                                                \
+    }
+
+#define CTSS_VM_BOUNDS_CHECK_BOTH(ptr, stack, id, x, y)                        \
+    if (vm->ptr < vm->stack + x) {                                             \
+        vm->error = CTSS_VM_ERR_##id##_UNDERFLOW;                              \
+        return;                                                                \
+    } else if (vm->ptr >= vm->stack + CTSS_VM_##id##_SIZE - y) {               \
+        vm->error = CTSS_VM_ERR_##id##_OVERFLOW;                               \
+        return;                                                                \
+    }
+#define CTSS_VM_BOUNDS_CHECK_HI(ptr, stack, id, y)                             \
+    if (vm->ptr >= vm->stack + CTSS_VM_##id##_SIZE - y) {                      \
+        vm->error = CTSS_VM_ERR_##id##_OVERFLOW;                               \
+        return;                                                                \
+    }
+#else
+#define CTSS_VM_BOUNDS_CHECK_LO(ptr, stack, id, x)
+#define CTSS_VM_BOUNDS_CHECK_BOTH(ptr, stack, id, x, y)
+#define CTSS_VM_BOUNDS_CHECK_HI(ptr, stack, id, y)
+#endif /* CTSS_VM_FEATURE_BOUNDS */
+
+#ifndef CTSS_VM_DS_SIZE
+#define CTSS_VM_DS_SIZE 4
 #endif
 
-#define CTSS_VM_DS_SIZE 16
+#ifndef CTSS_VM_RS_SIZE
 #define CTSS_VM_RS_SIZE 8
+#endif
+
+#ifndef CTSS_VM_MEM_SIZE
 #define CTSS_VM_MEM_SIZE 0x400 // (cells * sizeof(CTSS_VMValue))
+#endif
+
+#ifndef CTSS_VM_TIB_SIZE
 #define CTSS_VM_TIB_SIZE 2
+#endif
+
+#ifndef CTSS_VM_TIB_TOKEN_SIZE
 #define CTSS_VM_TIB_TOKEN_SIZE 64
+#endif
+
+#ifndef CTSS_VM_RIB_SIZE
 #define CTSS_VM_RIB_SIZE 0x800
+#endif
+
+#ifndef CTSS_VM_TOKEN_SIZE
 #define CTSS_VM_TOKEN_SIZE 64
+#endif
 
 #define CTSS_OP(name) ctss_vm_op_##name
 #define CTSS_DECL_OP(name) static void CTSS_OP(name)(CTSS_VM * vm)
@@ -45,7 +110,15 @@ typedef struct CTSS_VMOpHeader CTSS_VMOpHeader;
 typedef union CTSS_VMValue CTSS_VMValue;
 typedef void (*CTSS_VMOp)(CTSS_VM *vm);
 
-typedef enum { CTSS_VM_ERR_OK = 0, CTSS_VM_ERR_UNKNOWN_WORD = 1 } CTSS_VMError;
+typedef enum {
+    CTSS_VM_ERR_OK = 0,
+    CTSS_VM_ERR_UNKNOWN_WORD,
+    CTSS_VM_ERR_DS_UNDERFLOW,
+    CTSS_VM_ERR_DS_OVERFLOW,
+    CTSS_VM_ERR_RS_UNDERFLOW,
+    CTSS_VM_ERR_RS_OVERFLOW,
+    CTSS_VM_ERR_MEM_OVERFLOW,
+} CTSS_VMError;
 
 typedef enum {
     CTSS_VM_FLAG_HIDDEN = 1,
@@ -92,12 +165,21 @@ typedef struct {
 } CTSS_VMParseResult;
 
 CTSS_DECL_OP(lit);
-static uint32_t ctss_cfa_lit;
-
-void ctss_vm_op_docolon(CTSS_VM *vm);
+CTSS_DECL_OP(docolon);
 
 void ctss_vm_dump(CTSS_VM *vm);
 void ctss_vm_dump_ds(CTSS_VM *vm);
+
+static uint32_t ctss_vm_cfa_lit;
+static CTSS_VMValue ctss_vm_defval = {.i32 = 0xdeadbeef};
+
+static char *ctss_vm_errors[] = {"",
+                                 "unknown word",
+                                 "DS underflow",
+                                 "DS overflow",
+                                 "RS underflow",
+                                 "RS overflow",
+                                 "out of memory"};
 
 void ctss_vm_init(CTSS_VM *vm) {
     memset(vm->ds, 0, sizeof(CTSS_VMValue) * CTSS_VM_DS_SIZE);
@@ -114,29 +196,59 @@ void ctss_vm_init(CTSS_VM *vm) {
 }
 
 static inline void ctss_vm_push_ds(CTSS_VM *vm, CTSS_VMValue v) {
-    CTSS_LOG(("push DS: %x\n", v.i32));
+#ifdef CTSS_VM_FEATURE_BOUNDS
+    if (vm->dsp >= vm->ds + CTSS_VM_DS_SIZE) {
+        vm->error = CTSS_VM_ERR_DS_OVERFLOW;
+        return;
+    }
+#endif
+    CTSS_TRACE(("push DS: %x\n", v.i32));
     *vm->dsp++ = v;
 }
 
 static inline CTSS_VMValue ctss_vm_pop_ds(CTSS_VM *vm) {
+#ifdef CTSS_VM_FEATURE_BOUNDS
+    if (vm->dsp <= vm->ds) {
+        vm->error = CTSS_VM_ERR_DS_UNDERFLOW;
+        return ctss_vm_defval;
+    }
+#endif
     CTSS_VMValue *v = --vm->dsp;
-    CTSS_LOG(("pop DS: %x\n", v->i32));
+    CTSS_TRACE(("pop DS: %x\n", v->i32));
     return *v;
 }
 
 static inline void ctss_vm_push_rs(CTSS_VM *vm, CTSS_VMValue v) {
-    CTSS_LOG(("push RS: %u\n", v.i32));
+#ifdef CTSS_VM_FEATURE_BOUNDS
+    if (vm->rsp >= vm->rs + CTSS_VM_RS_SIZE) {
+        vm->error = CTSS_VM_ERR_RS_OVERFLOW;
+        return;
+    }
+#endif
+    CTSS_TRACE(("push RS: %u\n", v.i32));
     *vm->rsp++ = v;
 }
 
 static inline CTSS_VMValue ctss_vm_pop_rs(CTSS_VM *vm) {
+#ifdef CTSS_VM_FEATURE_BOUNDS
+    if (vm->rsp <= vm->rs) {
+        vm->error = CTSS_VM_ERR_RS_UNDERFLOW;
+        return ctss_vm_defval;
+    }
+#endif
     CTSS_VMValue *v = --vm->rsp;
-    CTSS_LOG(("pop RS: %u\n", v->i32));
+    CTSS_TRACE(("pop RS: %u\n", v->i32));
     return *v;
 }
 
 static inline void ctss_vm_push_dict(CTSS_VM *vm, CTSS_VMValue v) {
-    CTSS_LOG(("pushdict: %u = %u\n", vm->here, v.i32));
+#ifdef CTSS_VM_FEATURE_BOUNDS
+    if (vm->here >= CTSS_VM_MEM_SIZE) {
+        vm->error = CTSS_VM_ERR_MEM_OVERFLOW;
+        return;
+    }
+#endif
+    CTSS_TRACE(("pushdict: %u = %u\n", vm->here, v.i32));
     vm->mem[vm->here] = v;
     vm->here++;
 }
@@ -161,7 +273,7 @@ static inline void ctss_vm_set_immediate(CTSS_VM *vm, uint32_t addr,
     } else {
         hd->flags &= ~CTSS_VM_FLAG_IMMEDIATE;
     }
-    CTSS_LOG(("set immediate: %s %u %u\n", hd->name, addr, state));
+    CTSS_TRACE(("set immediate: %s %u %u\n", hd->name, addr, state));
 }
 
 static inline void ctss_vm_next(CTSS_VM *vm) {
@@ -169,17 +281,17 @@ static inline void ctss_vm_next(CTSS_VM *vm) {
 }
 
 static inline void ctss_vm_interpret_mode(CTSS_VM *vm) {
-    CTSS_LOG(("<interpret>\n"));
+    CTSS_TRACE(("<interpret>\n"));
     vm->mode = 0;
 }
 
 static inline void ctss_vm_compile_mode(CTSS_VM *vm) {
-    CTSS_LOG(("<compiling>\n"));
+    CTSS_TRACE(("<compiling>\n"));
     vm->mode = 1;
 }
 
 uint32_t ctss_vm_create_header(CTSS_VM *vm, char *name) {
-    CTSS_LOG(("==== new word header: %s, %u\n", name, vm->here));
+    CTSS_TRACE(("==== new word header: %s, %u\n", name, vm->here));
     CTSS_VMOpHeader *hd = (CTSS_VMOpHeader *)calloc(1, sizeof(CTSS_VMOpHeader));
     hd->next = vm->latest;
     hd->name = strdup(name);
@@ -211,7 +323,8 @@ uint32_t ctss_vm_defword(CTSS_VM *vm, char *name, ...) {
 
     uint32_t wAddr;
     while ((wAddr = va_arg(args, uint32_t)) != 0) {
-        CTSS_LOG(("defword: %s addr: %u\n", vm->mem[wAddr].head->name, wAddr));
+        CTSS_TRACE(
+            ("defword: %s addr: %u\n", vm->mem[wAddr].head->name, wAddr));
         CTSS_VMValue w = {.i32 = wAddr + 1}; // cfa
         ctss_vm_push_dict(vm, w);
     }
@@ -283,7 +396,7 @@ char *ctss_vm_buffer_token(CTSS_VM *vm, char *token) {
 }
 
 void ctss_vm_op_docolon(CTSS_VM *vm) {
-    CTSS_LOG(("docolon\n"));
+    CTSS_TRACE(("docolon\n"));
     CTSS_VMValue v = {.i32 = vm->np};
     ctss_vm_push_rs(vm, v);
     vm->np = vm->ip + 1;
@@ -291,14 +404,17 @@ void ctss_vm_op_docolon(CTSS_VM *vm) {
 }
 
 void ctss_vm_execute(CTSS_VM *vm) {
-    while (vm->ip) {
-        CTSS_LOG(("exe: %s %u %p\n", vm->mem[vm->ip - 1].head->name, vm->ip,
-                  vm->mem[vm->ip].op));
+    while (vm->ip && !vm->error) {
+        CTSS_TRACE(("exe: %s %u %p\n", vm->mem[vm->ip - 1].head->name, vm->ip,
+                    vm->mem[vm->ip].op));
         // ctss_vm_dump(vm);
         // ctss_vm_dump_ds(vm);
         vm->mem[vm->ip].op(vm);
     }
-    CTSS_LOG(("<<<< exec done\n"));
+    CTSS_TRACE(("<<<< exe done\n"));
+    if (vm->error) {
+        CTSS_PRINT(("error: %u (%s)\n", vm->error, ctss_vm_errors[vm->error]));
+    }
 }
 
 void ctss_vm_execute_word(CTSS_VM *vm, uint32_t addr) {
@@ -318,7 +434,7 @@ CTSS_VMParseResult ctss_vm_parse_value(char *token) {
     int32_t x;
     char *check = NULL;
     x = (int32_t)strtol(token, &check, 10);
-    // CTSS_LOG(("parse: %s %d %d\n", token, x, *check));
+    // CTSS_TRACE(("parse: %s %d %d\n", token, x, *check));
     if (*check) {
         if (*token == '0' && *(token + 1) == 'x') {
             check = NULL;
@@ -342,7 +458,7 @@ void ctss_vm_execute_literal(CTSS_VM *vm, CTSS_VMValue v) {
     if (!vm->mode) {
         ctss_vm_push_ds(vm, v);
     } else {
-        CTSS_VMValue lit = {.i32 = ctss_cfa_lit};
+        CTSS_VMValue lit = {.i32 = ctss_vm_cfa_lit};
         ctss_vm_push_dict(vm, lit);
         ctss_vm_push_dict(vm, v);
     }
@@ -352,22 +468,23 @@ uint32_t ctss_vm_execute_token(CTSS_VM *vm, char *token) {
     uint32_t word = ctss_vm_find_word(vm, token, vm->latest);
     if (word) {
         ctss_vm_execute_word(vm, word);
-        return CTSS_VM_ERR_OK;
+    } else {
+        CTSS_VMParseResult res = ctss_vm_parse_value(token);
+        if (!res.err) {
+            ctss_vm_execute_literal(vm, res.val);
+        } else {
+            CTSS_PRINT(("Unknown word: %s\n", token));
+            vm->error = CTSS_VM_ERR_UNKNOWN_WORD;
+        }
     }
-    CTSS_VMParseResult res = ctss_vm_parse_value(token);
-    if (!res.err) {
-        ctss_vm_execute_literal(vm, res.val);
-        return CTSS_VM_ERR_OK;
-    }
-    fprintf(stderr, "Unknown word: %s\n", token);
-    vm->error = CTSS_VM_ERR_UNKNOWN_WORD;
-    return CTSS_VM_ERR_UNKNOWN_WORD;
+    return vm->error;
 }
 
 uint32_t ctss_vm_interpret(CTSS_VM *vm, char *input) {
     ctss_vm_init_reader(vm, input);
     char *token = ctss_vm_read_token(vm);
     uint32_t err = CTSS_VM_ERR_OK;
+    vm->error = err;
     while (token && !err) {
         err = ctss_vm_execute_token(vm, token);
         token = ctss_vm_read_token(vm);
@@ -386,7 +503,7 @@ CTSS_DECL_OP(toggle_hidden) {
     CTSS_VMOpHeader *hd = vm->mem[vm->latest].head;
     ctss_vm_toggle_hidden(hd);
     ctss_vm_next(vm);
-    CTSS_LOG(("toggle hidden: %s %u\n", hd->name, hd->flags));
+    CTSS_TRACE(("toggle hidden: %s %u\n", hd->name, hd->flags));
 }
 
 CTSS_DECL_OP(here) {
@@ -477,11 +594,11 @@ CTSS_DECL_OP(lit) {
 
 CTSS_DECL_OP(ret) {
     vm->np = ctss_vm_pop_rs(vm).i32;
-    // CTSS_LOG(("ret: %p\n", vm->np));
     ctss_vm_next(vm);
 }
 
 CTSS_DECL_OP(swap) {
+    CTSS_VM_BOUNDS_CHECK_LO(dsp, ds, DS, 2)
     CTSS_VMValue *dsp = vm->dsp - 1;
     CTSS_VMValue a = *dsp;
     *dsp = *(dsp - 1);
@@ -490,23 +607,27 @@ CTSS_DECL_OP(swap) {
 }
 
 CTSS_DECL_OP(dup) {
+    CTSS_VM_BOUNDS_CHECK_BOTH(dsp, ds, DS, 1, 1)
     *vm->dsp = *(vm->dsp - 1);
     vm->dsp++;
     ctss_vm_next(vm);
 }
 
 CTSS_DECL_OP(drop) {
+    CTSS_VM_BOUNDS_CHECK_LO(dsp, ds, DS, 1)
     vm->dsp--;
     ctss_vm_next(vm);
 }
 
 CTSS_DECL_OP(over) {
+    CTSS_VM_BOUNDS_CHECK_BOTH(dsp, ds, DS, 2, 1)
     *vm->dsp = *(vm->dsp - 2);
     vm->dsp++;
     ctss_vm_next(vm);
 }
 
 CTSS_DECL_OP(rot) {
+    CTSS_VM_BOUNDS_CHECK_LO(dsp, ds, DS, 3)
     CTSS_VMValue *dsp = vm->dsp - 1;
     CTSS_VMValue c = *(dsp - 2);
     *(dsp - 2) = *(dsp - 1);
@@ -516,6 +637,7 @@ CTSS_DECL_OP(rot) {
 }
 
 CTSS_DECL_OP(rot_inv) {
+    CTSS_VM_BOUNDS_CHECK_LO(dsp, ds, DS, 3)
     CTSS_VMValue *dsp = vm->dsp - 1;
     CTSS_VMValue a = *dsp;
     *dsp = *(dsp - 1);
@@ -557,11 +679,11 @@ CTSS_DECL_OP(read_token) {
 
 #define CTSS_DECL_MATH_OP(name, op, aa, bb, type, ctype)                       \
     CTSS_DECL_OP(name##_##type) {                                              \
+        CTSS_VM_BOUNDS_CHECK_LO(dsp, ds, DS, 2)                                \
         CTSS_VMValue *dsp = vm->dsp - 1;                                       \
         ctype a = (*dsp).type;                                                 \
         ctype b = (*(dsp - 1)).type;                                           \
-        CTSS_VMValue v = {.type = aa op bb};                                   \
-        *(dsp - 1) = v;                                                        \
+        (*(dsp - 1)).type = aa op bb;                                          \
         vm->dsp = dsp;                                                         \
         ctss_vm_next(vm);                                                      \
     }
@@ -570,14 +692,24 @@ CTSS_DECL_MATH_OP(add, +, a, b, i32, uint32_t)
 CTSS_DECL_MATH_OP(mul, *, a, b, i32, uint32_t)
 CTSS_DECL_MATH_OP(sub, -, b, a, i32, uint32_t)
 CTSS_DECL_MATH_OP(div, /, b, a, i32, uint32_t)
+CTSS_DECL_MATH_OP(mod, %, b, a, i32, uint32_t)
 
 CTSS_DECL_MATH_OP(add, +, a, b, f32, float)
 CTSS_DECL_MATH_OP(mul, *, a, b, f32, float)
 CTSS_DECL_MATH_OP(sub, -, b, a, f32, float)
 CTSS_DECL_MATH_OP(div, /, b, a, f32, float)
 
+CTSS_DECL_OP(mod_f32) {
+    CTSS_VM_BOUNDS_CHECK_LO(dsp, ds, DS, 2)
+    CTSS_VMValue *dsp = vm->dsp - 1;
+    (*(dsp - 1)).f32 = fmodf((*(dsp - 1)).f32, (*dsp).f32);
+    vm->dsp = dsp;
+    ctss_vm_next(vm);
+}
+
 #define CTSS_DECL_CMP_OP(name, op, type, ctype)                                \
     CTSS_DECL_OP(cmp_##name##_##type) {                                        \
+        CTSS_VM_BOUNDS_CHECK_LO(dsp, ds, DS, 2)                                \
         CTSS_VMValue *dsp = vm->dsp - 1;                                       \
         ctype b = (*dsp).type;                                                 \
         ctype a = (*(dsp - 1)).type;                                           \
@@ -602,21 +734,25 @@ CTSS_DECL_CMP_OP(eq, ==, f32, float)
 CTSS_DECL_CMP_OP(neq, !=, f32, float)
 
 CTSS_DECL_OP(i32_f32) {
+    CTSS_VM_BOUNDS_CHECK_LO(dsp, ds, DS, 1)
     (*(vm->dsp - 1)).f32 = (float)((*(vm->dsp - 1)).i32);
     ctss_vm_next(vm);
 }
 
 CTSS_DECL_OP(f32_i32) {
+    CTSS_VM_BOUNDS_CHECK_LO(dsp, ds, DS, 1)
     (*(vm->dsp - 1)).i32 = (int32_t)((*(vm->dsp - 1)).f32);
     ctss_vm_next(vm);
 }
 
 CTSS_DECL_OP(sinf) {
+    CTSS_VM_BOUNDS_CHECK_LO(dsp, ds, DS, 1)
     (*(vm->dsp - 1)).f32 = sinf((*(vm->dsp - 1)).f32);
     ctss_vm_next(vm);
 }
 
 CTSS_DECL_OP(cosf) {
+    CTSS_VM_BOUNDS_CHECK_LO(dsp, ds, DS, 1)
     (*(vm->dsp - 1)).f32 = cosf((*(vm->dsp - 1)).f32);
     ctss_vm_next(vm);
 }
@@ -625,52 +761,52 @@ void ctss_vm_dump_words(CTSS_VM *vm) {
     uint32_t addr = vm->latest;
     while (addr) {
         CTSS_VMOpHeader *hd = vm->mem[addr].head;
-        printf("addr: %u %s op: %p next: %u\n", addr, hd->name,
-               vm->mem[addr + 1].op, hd->next);
+        CTSS_PRINT(("addr: %04x %s op: %p next: %u\n", addr, hd->name,
+                    vm->mem[addr + 1].op, hd->next));
         addr = hd->next;
     }
 }
 
 void ctss_vm_dump_ds(CTSS_VM *vm) {
     for (CTSS_VMValue *i = vm->dsp - 1; i >= vm->ds; i--) {
-        printf("<%ld> %d %f\n", i - vm->ds, (*i).i32, (*i).f32);
+        CTSS_PRINT(("<%ld> %d %f\n", i - vm->ds, (*i).i32, (*i).f32));
     }
-    printf("--\n");
+    CTSS_PRINT(("--\n"));
 }
 
 void ctss_vm_dump_rs(CTSS_VM *vm) {
     for (CTSS_VMValue *i = vm->rsp - 1; i >= vm->rs; i--) {
-        printf("<%ld> %d %f\n", i - vm->rs, (*i).i32, (*i).f32);
+        CTSS_PRINT(("<%ld> %d %f\n", i - vm->rs, (*i).i32, (*i).f32));
     }
-    printf("--\n");
+    CTSS_PRINT(("--\n"));
 }
 
 void ctss_vm_dump_tos_i32(CTSS_VM *vm) {
-  printf("%d ", ctss_vm_pop_ds(vm).i32);
+    CTSS_PRINT(("%d ", ctss_vm_pop_ds(vm).i32));
 }
 
 void ctss_vm_dump_tos_f32(CTSS_VM *vm) {
-  printf("%f ", ctss_vm_pop_ds(vm).f32);
+    CTSS_PRINT(("%f ", ctss_vm_pop_ds(vm).f32));
 }
 
 void ctss_vm_dump(CTSS_VM *vm) {
-    printf(
-        "dsp: %ld, rsp: %ld, ip: %u, np: %u, latest: %u, here: %u, mode: %u, "
-        "err: %u\n",
-        vm->dsp - vm->ds, vm->rsp - vm->rs, vm->ip, vm->np, vm->latest,
-        vm->here, vm->mode, vm->error);
+    CTSS_PRINT(
+        ("dsp: %ld, rsp: %ld, ip: %u, np: %u, latest: %u, here: %u, mode: %u, "
+         "err: %u\n",
+         vm->dsp - vm->ds, vm->rsp - vm->rs, vm->ip, vm->np, vm->latest,
+         vm->here, vm->mode, vm->error));
 }
 
 void ctss_vm_dump_mem(CTSS_VM *vm) {
     CTSS_VMValue *addr = vm->mem;
     uint32_t len = CTSS_VM_MEM_SIZE;
     while (len) {
-        printf("%04lx: ", addr - vm->mem);
+        CTSS_PRINT(("%04lx: ", addr - vm->mem));
         for (uint8_t i = 0; i < 8; i++) {
-            printf("%08x ", (*addr).i32);
+            CTSS_PRINT(("%08x ", (*addr).i32));
             addr++;
         }
-        printf("\n");
+        CTSS_PRINT(("\n"));
         len -= 8;
     }
 }
@@ -713,7 +849,7 @@ CTSS_DECL_OP(dump_tos_f32) {
 void ctss_vm_init_primitives(CTSS_VM *vm) {
     CTSS_DEFNATIVE("ret", ret);
     CTSS_DEFNATIVE("lit", lit);
-    ctss_cfa_lit = lit + 1;
+    ctss_vm_cfa_lit = lit + 1;
     CTSS_DEFNATIVE("create-header", create_header);
 
     // stack
@@ -722,7 +858,7 @@ void ctss_vm_init_primitives(CTSS_VM *vm) {
     CTSS_DEFNATIVE("drop", drop);
     CTSS_DEFNATIVE("over", over);
     CTSS_DEFNATIVE("rot", rot);
-    CTSS_DEFNATIVE("rot-", rot_inv);
+    CTSS_DEFNATIVE("-rot", rot_inv);
     CTSS_DEFNATIVE(">r", rpush);
     CTSS_DEFNATIVE("r>", rpop);
 
@@ -742,7 +878,7 @@ void ctss_vm_init_primitives(CTSS_VM *vm) {
     // CTSS_DEFNATIVE("a>i", addr_i32);
 
     // flags
-    CTSS_DEFNATIVE("toggle-hidden", toggle_hidden);
+    CTSS_DEFNATIVE("^hidden", toggle_hidden);
     CTSS_DEFNATIVE("immediate!", immediate);
     CTSS_DEFNATIVE("interpret>>", interpret);
     ctss_vm_set_immediate(vm, interpret, 1);
@@ -765,10 +901,12 @@ void ctss_vm_init_primitives(CTSS_VM *vm) {
     CTSS_DEFNATIVE("*", mul_i32);
     CTSS_DEFNATIVE("-", sub_i32);
     CTSS_DEFNATIVE("/", div_i32);
-    CTSS_DEFNATIVE("+f", add_f32);
-    CTSS_DEFNATIVE("*f", mul_f32);
-    CTSS_DEFNATIVE("-f", sub_f32);
-    CTSS_DEFNATIVE("/f", div_f32);
+    CTSS_DEFNATIVE("mod", mod_i32);
+    CTSS_DEFNATIVE("f+", add_f32);
+    CTSS_DEFNATIVE("f*", mul_f32);
+    CTSS_DEFNATIVE("f-", sub_f32);
+    CTSS_DEFNATIVE("f/", div_f32);
+    CTSS_DEFNATIVE("fmod", mod_f32);
 
     CTSS_DEFNATIVE("<", cmp_lt_i32);
     CTSS_DEFNATIVE(">", cmp_gt_i32);
@@ -776,12 +914,12 @@ void ctss_vm_init_primitives(CTSS_VM *vm) {
     CTSS_DEFNATIVE(">=", cmp_ge_i32);
     CTSS_DEFNATIVE("==", cmp_eq_i32);
     CTSS_DEFNATIVE("!=", cmp_neq_i32);
-    CTSS_DEFNATIVE("<f", cmp_lt_f32);
-    CTSS_DEFNATIVE(">f", cmp_gt_f32);
-    CTSS_DEFNATIVE("<=f", cmp_le_f32);
-    CTSS_DEFNATIVE(">=f", cmp_ge_f32);
-    CTSS_DEFNATIVE("==f", cmp_eq_f32);
-    CTSS_DEFNATIVE("!=f", cmp_neq_f32);
+    CTSS_DEFNATIVE("f<", cmp_lt_f32);
+    CTSS_DEFNATIVE("f>", cmp_gt_f32);
+    CTSS_DEFNATIVE("f<=", cmp_le_f32);
+    CTSS_DEFNATIVE("f>=", cmp_ge_f32);
+    CTSS_DEFNATIVE("f==", cmp_eq_f32);
+    CTSS_DEFNATIVE("f!=", cmp_neq_f32);
 
     CTSS_DEFNATIVE("i>f", i32_f32);
     CTSS_DEFNATIVE("f>i", f32_i32);
@@ -802,6 +940,13 @@ void ctss_vm_init_primitives(CTSS_VM *vm) {
     CTSS_DEFNATIVE(".f", dump_tos_f32);
 }
 
+void repl(CTSS_VM *vm) {
+    char buf[256];
+    while (fgets(buf, 255, stdin)) {
+        ctss_vm_interpret(vm, buf);
+    }
+}
+
 int main() {
     printf("CTSS_VM:\t%lu\n", sizeof(CTSS_VM));
 
@@ -810,17 +955,8 @@ int main() {
     ctss_vm_dump(&vm);
 
     ctss_vm_init_primitives(&vm);
-
-    //ctss_vm_dump(&vm);
-    //ctss_vm_dump_words(&vm);
-    // ctss_vm_dump_ds(&vm);
-
     ctss_vm_interpret(&vm, ctss_vm_core_dict);
-    ctss_vm_interpret(&vm, ": foo > if 100 200 < if 1000 else -1000 then .s "
-                           "else -100 .s then ; 10 20 foo .");
-    ctss_vm_dump(&vm);
-    ctss_vm_dump_ds(&vm);
-    ctss_vm_dump_rs(&vm);
-    // ctss_vm_dump_mem(&vm);
+    repl(&vm);
+    
     return 0;
 }
