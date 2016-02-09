@@ -5,5 +5,4 @@
 #define CTSS_VM_FEATURE_PRINT
 //#define CTSS_VM_FEATURE_TRACE
 
-#define CTSS_VM_CUSTOM_TYPES \
-  float* buf;
+#define CTSS_VM_CUSTOM_TYPES void *synthOp;

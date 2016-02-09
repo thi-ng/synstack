@@ -1,0 +1,6 @@
+#pragma once
+
+#define CTSS_SAMPLE_RATE 44100
+#define CTSS_AUDIO_BUFFER_SIZE 32
+
+#define CTSS_SYNTH_DELAY

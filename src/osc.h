@@ -15,7 +15,7 @@
         while (len--) {                                                        \
             phase += freq;                                                     \
             phase -= (float)((int32_t)phase);                                  \
-            *buf++ = ((expr)-ctss_poly_blep(phase, freq)) * state->gain +        \
+            *buf++ = ((expr)-ctss_poly_blep(phase, freq)) * state->gain +      \
                      state->dcOffset;                                          \
         }                                                                      \
         state->phase = phase;                                                  \

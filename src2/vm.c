@@ -791,4 +791,3 @@ void ctss_vm_init_primitives(CTSS_VM *vm) {
     CTSS_DEFNATIVE(".f", dump_tos_f32);
 #endif
 }
-

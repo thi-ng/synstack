@@ -67,7 +67,7 @@
 #endif /* CTSS_VM_FEATURE_BOUNDS */
 
 #ifndef CTSS_VM_DS_SIZE
-#define CTSS_VM_DS_SIZE 4
+#define CTSS_VM_DS_SIZE 32
 #endif
 
 #ifndef CTSS_VM_RS_SIZE
