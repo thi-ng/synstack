@@ -667,36 +667,33 @@ CTSS_DECL_OP(read_string) {
         vm->dsp = dsp;                                                         \
     }
 
-#define CTSS_DECL_CMP_OP(name, op, type, ctype)                                \
+#define CTSS_DECL_CMP_OP(name, op, type)                                       \
     CTSS_DECL_OP(cmp_##name##_##type) {                                        \
         CTSS_VM_BOUNDS_CHECK_LO(dsp, ds, DS, 2)                                \
         CTSS_VMValue *dsp = vm->dsp - 1;                                       \
-        ctype b = (*dsp).type;                                                 \
-        ctype a = (*(dsp - 1)).type;                                           \
-        CTSS_VMValue v = {.i32 = ((a op b) ? 1 : 0)};                          \
-        *(dsp - 1) = v;                                                        \
+        (*(dsp - 1)).i32 = (((*(dsp - 1)).type op (*dsp).type) ? 1 : 0);       \
         vm->dsp = dsp;                                                         \
     }
 
-CTSS_DECL_MATH_OP(add, +, a, b, i32, uint32_t)
-CTSS_DECL_MATH_OP(mul, *, a, b, i32, uint32_t)
-CTSS_DECL_MATH_OP(sub, -, b, a, i32, uint32_t)
-CTSS_DECL_MATH_OP(div, /, b, a, i32, uint32_t)
-CTSS_DECL_MATH_OP(mod, %, b, a, i32, uint32_t)
+CTSS_DECL_MATH_OP(add, +, a, b, i32, int32_t)
+CTSS_DECL_MATH_OP(mul, *, a, b, i32, int32_t)
+CTSS_DECL_MATH_OP(sub, -, b, a, i32, int32_t)
+CTSS_DECL_MATH_OP(div, /, b, a, i32, int32_t)
+CTSS_DECL_MATH_OP(mod, %, b, a, i32, int32_t)
 
-CTSS_DECL_MATH_OP(log_and, &&, a, b, i32, uint32_t);
-CTSS_DECL_MATH_OP(log_or, ||, a, b, i32, uint32_t);
+CTSS_DECL_MATH_OP(log_and, &&, a, b, i32, int32_t);
+CTSS_DECL_MATH_OP(log_or, ||, a, b, i32, int32_t);
 CTSS_DECL_OP(not_i32) {
     CTSS_VM_BOUNDS_CHECK_LO(dsp, ds, DS, 1)
     (*(vm->dsp - 1)).i32 = !(*(vm->dsp - 1)).i32;
 }
 
-CTSS_DECL_CMP_OP(lt, <, i32, uint32_t)
-CTSS_DECL_CMP_OP(gt, >, i32, uint32_t)
-CTSS_DECL_CMP_OP(le, <=, i32, uint32_t)
-CTSS_DECL_CMP_OP(ge, >=, i32, uint32_t)
-CTSS_DECL_CMP_OP(eq, ==, i32, uint32_t)
-CTSS_DECL_CMP_OP(neq, !=, i32, uint32_t)
+CTSS_DECL_CMP_OP(lt, <, i32)
+CTSS_DECL_CMP_OP(gt, >, i32)
+CTSS_DECL_CMP_OP(le, <=, i32)
+CTSS_DECL_CMP_OP(ge, >=, i32)
+CTSS_DECL_CMP_OP(eq, ==, i32)
+CTSS_DECL_CMP_OP(neq, !=, i32)
 
 #ifdef CTSS_VM_FEATURE_FLOAT
 CTSS_DECL_MATH_OP(add, +, a, b, f32, float)
@@ -711,12 +708,12 @@ CTSS_DECL_OP(mod_f32) {
     vm->dsp = dsp;
 }
 
-CTSS_DECL_CMP_OP(lt, <, f32, float)
-CTSS_DECL_CMP_OP(gt, >, f32, float)
-CTSS_DECL_CMP_OP(le, <=, f32, float)
-CTSS_DECL_CMP_OP(ge, >=, f32, float)
-CTSS_DECL_CMP_OP(eq, ==, f32, float)
-CTSS_DECL_CMP_OP(neq, !=, f32, float)
+CTSS_DECL_CMP_OP(lt, <, f32)
+CTSS_DECL_CMP_OP(gt, >, f32)
+CTSS_DECL_CMP_OP(le, <=, f32)
+CTSS_DECL_CMP_OP(ge, >=, f32)
+CTSS_DECL_CMP_OP(eq, ==, f32)
+CTSS_DECL_CMP_OP(neq, !=, f32)
 
 CTSS_DECL_OP(i32_f32) {
     CTSS_VM_BOUNDS_CHECK_LO(dsp, ds, DS, 1)
