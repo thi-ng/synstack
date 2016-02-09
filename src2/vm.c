@@ -12,173 +12,18 @@
 //      =======
 //   =====
 
-#include <stdint.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include <stdarg.h>
 #include <math.h>
-
-#include "core_dict.h"
-
-#define CTSS_VM_FEATURE_FLOAT
-#define CTSS_VM_FEATURE_BOUNDS
-#define CTSS_VM_FEATURE_PRINT
-//#define CTSS_VM_FEATURE_TRACE
-
-#ifdef CTSS_VM_FEATURE_PRINT
-
-#ifndef CTSS_PRINT_FN
-#define CTSS_PRINT_FN printf
-#endif /* CTSS_PRINT_FN */
-
-#define CTSS_PRINT(expr) CTSS_PRINT_FN expr
-
-#ifdef CTSS_VM_FEATURE_TRACE
-#define CTSS_TRACE(expr) CTSS_PRINT_FN expr
-#else
-#define CTSS_TRACE(expr)
-#endif /* CTSS_VM_FEATURE_TRACE */
-
-#else /* CTSS_VM_FEATURE_PRINT */
-
-#define CTSS_PRINT(expr)
-#define CTSS_TRACE(expr)
-
-#endif /* CTSS_VM_FEATURE_PRINT */
-
-#ifdef CTSS_VM_FEATURE_BOUNDS
-#define CTSS_VM_BOUNDS_CHECK_LO(ptr, buf, id, x)                               \
-    if (vm->ptr < vm->buf + x) {                                               \
-        vm->error = CTSS_VM_ERR_##id##_UNDERFLOW;                              \
-        return;                                                                \
-    }
-
-#define CTSS_VM_BOUNDS_CHECK_BOTH(ptr, buf, id, x, y)                          \
-    if (vm->ptr < vm->buf + x) {                                               \
-        vm->error = CTSS_VM_ERR_##id##_UNDERFLOW;                              \
-        return;                                                                \
-    } else if (vm->ptr >= vm->buf + CTSS_VM_##id##_SIZE - y) {                 \
-        vm->error = CTSS_VM_ERR_##id##_OVERFLOW;                               \
-        return;                                                                \
-    }
-#define CTSS_VM_BOUNDS_CHECK_HI(ptr, buf, id, y)                               \
-    if (vm->ptr >= vm->buf + CTSS_VM_##id##_SIZE - y) {                        \
-        vm->error = CTSS_VM_ERR_##id##_OVERFLOW;                               \
-        return;                                                                \
-    }
-#else
-
-#define CTSS_VM_BOUNDS_CHECK_LO(ptr, buf, id, x)
-#define CTSS_VM_BOUNDS_CHECK_BOTH(ptr, buf, id, x, y)
-#define CTSS_VM_BOUNDS_CHECK_HI(ptr, buf, id, y)
-
-#endif /* CTSS_VM_FEATURE_BOUNDS */
-
-#ifndef CTSS_VM_DS_SIZE
-#define CTSS_VM_DS_SIZE 4
-#endif
-
-#ifndef CTSS_VM_RS_SIZE
-#define CTSS_VM_RS_SIZE 8
-#endif
-
-#ifndef CTSS_VM_MEM_SIZE
-#define CTSS_VM_MEM_SIZE 0x400 // (cells * sizeof(CTSS_VMValue))
-#endif
-
-#ifndef CTSS_VM_TIB_SIZE
-#define CTSS_VM_TIB_SIZE 2
-#endif
-
-#ifndef CTSS_VM_TIB_TOKEN_SIZE
-#define CTSS_VM_TIB_TOKEN_SIZE 64
-#endif
-
-#ifndef CTSS_VM_RIB_SIZE
-#define CTSS_VM_RIB_SIZE 0x800
-#endif
-
-#ifndef CTSS_VM_TOKEN_SIZE
-#define CTSS_VM_TOKEN_SIZE 64
-#endif
-
-#define CTSS_OP(name) ctss_vm_op_##name
-#define CTSS_DECL_OP(name) static void CTSS_OP(name)(CTSS_VM * vm)
-#define CTSS_DEFNATIVE(name, id)                                               \
-    uint32_t id = ctss_vm_defnative(vm, name, CTSS_OP(id))
-
-typedef struct CTSS_VM CTSS_VM;
-typedef struct CTSS_VMOpHeader CTSS_VMOpHeader;
-typedef union CTSS_VMValue CTSS_VMValue;
-typedef void (*CTSS_VMOp)(CTSS_VM *vm);
-
-typedef enum {
-    CTSS_VM_ERR_OK = 0,
-    CTSS_VM_ERR_UNKNOWN_WORD,
-    CTSS_VM_ERR_DS_UNDERFLOW,
-    CTSS_VM_ERR_DS_OVERFLOW,
-    CTSS_VM_ERR_RS_UNDERFLOW,
-    CTSS_VM_ERR_RS_OVERFLOW,
-    CTSS_VM_ERR_MEM_OVERFLOW,
-    CTSS_VM_ERR_TOKEN_OVERFLOW,
-} CTSS_VMError;
-
-typedef enum {
-    CTSS_VM_FLAG_HIDDEN = 1,
-    CTSS_VM_FLAG_IMMEDIATE = 2,
-    CTSS_VM_FLAG_NATIVE = 4,
-} CTSS_VMFlag;
-
-struct CTSS_VMOpHeader {
-    uint32_t next;
-    char *name;
-    uint8_t flags;
-};
-
-union CTSS_VMValue {
-    CTSS_VMOpHeader *head;
-    CTSS_VMOp op;
-    int32_t i32;
-#ifdef CTSS_VM_FEATURE_FLOAT
-    float f32;
-#endif
-    char *str;
-};
-
-struct CTSS_VM {
-    CTSS_VMValue *dsp;
-    CTSS_VMValue *rsp;
-    CTSS_VMValue ds[CTSS_VM_DS_SIZE];
-    CTSS_VMValue rs[CTSS_VM_RS_SIZE];
-    uint32_t ip;
-    uint32_t np;
-    uint32_t latest;
-    uint32_t here;
-    uint8_t mode;
-    CTSS_VMValue mem[CTSS_VM_MEM_SIZE];
-    char tib[CTSS_VM_TIB_SIZE][CTSS_VM_TIB_TOKEN_SIZE];
-    char rbuf[CTSS_VM_RIB_SIZE];
-    char token[CTSS_VM_TOKEN_SIZE];
-    uint32_t readpos;
-    uint8_t tibid;
-    CTSS_VMError error;
-};
-
-typedef struct {
-    CTSS_VMValue val;
-    uint8_t err;
-} CTSS_VMParseResult;
+#include "vm.h"
 
 CTSS_DECL_OP(lit);
 CTSS_DECL_OP(docolon);
 
-void ctss_vm_dump(CTSS_VM *vm);
-void ctss_vm_dump_ds(CTSS_VM *vm);
-void ctss_vm_dump_error(CTSS_VM *vm);
-
 static uint32_t ctss_vm_cfa_lit;
-static CTSS_VMValue ctss_vm_defval = {.i32 = 0xdeadbeef};
+static CTSS_VMValue ctss_vm_errval = {.i32 = 0xdeadbeef};
 
 static char *ctss_vm_errors[] = {"",
                                  "unknown word",
@@ -213,7 +58,7 @@ static inline CTSS_VMValue ctss_vm_pop_ds(CTSS_VM *vm) {
 #ifdef CTSS_VM_FEATURE_BOUNDS
     if (vm->dsp <= vm->ds) {
         vm->error = CTSS_VM_ERR_DS_UNDERFLOW;
-        return ctss_vm_defval;
+        return ctss_vm_errval;
     }
 #endif
     CTSS_VMValue *v = --vm->dsp;
@@ -231,7 +76,7 @@ static inline CTSS_VMValue ctss_vm_pop_rs(CTSS_VM *vm) {
 #ifdef CTSS_VM_FEATURE_BOUNDS
     if (vm->rsp <= vm->rs) {
         vm->error = CTSS_VM_ERR_RS_UNDERFLOW;
-        return ctss_vm_defval;
+        return ctss_vm_errval;
     }
 #endif
     CTSS_VMValue *v = --vm->rsp;
@@ -342,7 +187,7 @@ uint32_t ctss_vm_find_word(CTSS_VM *vm, char *word, uint32_t addr) {
     return 0;
 }
 
-uint8_t ctss_vm_tib_id(CTSS_VM *vm) {
+static uint8_t ctss_vm_tib_id(CTSS_VM *vm) {
     uint8_t id = vm->tibid;
     vm->tibid = (vm->tibid + 1) % CTSS_VM_TIB_SIZE;
     return id;
@@ -362,7 +207,7 @@ static inline uint8_t ctss_vm_isdelim(char c) {
     return c == ' ' || c == '\n' || c == '\0';
 }
 
-char ctss_vm_reader_skip_ws(CTSS_VM *vm) {
+static char ctss_vm_reader_skip_ws(CTSS_VM *vm) {
     char c;
     do {
         c = ctss_vm_read_char(vm);
@@ -396,7 +241,7 @@ char *ctss_vm_buffer_token(CTSS_VM *vm, char *token) {
     return tib;
 }
 
-void ctss_vm_execute(CTSS_VM *vm) {
+static void ctss_vm_execute(CTSS_VM *vm) {
     while (vm->ip && !vm->error) {
         CTSS_TRACE(("exe: %s %u %p\n", vm->mem[vm->ip - 1].head->name, vm->ip,
                     vm->mem[vm->ip].op));
@@ -409,7 +254,7 @@ void ctss_vm_execute(CTSS_VM *vm) {
     }
 }
 
-void ctss_vm_execute_word(CTSS_VM *vm, uint32_t addr) {
+static void ctss_vm_execute_word(CTSS_VM *vm, uint32_t addr) {
     CTSS_VMOpHeader *hd = vm->mem[addr].head;
     if (vm->mode == 0 || ctss_vm_isimmediate(hd) != 0) {
         vm->ip = addr + 1;
@@ -421,7 +266,7 @@ void ctss_vm_execute_word(CTSS_VM *vm, uint32_t addr) {
     }
 }
 
-CTSS_VMParseResult ctss_vm_parse_value(char *token) {
+static CTSS_VMParseResult ctss_vm_parse_value(char *token) {
     CTSS_VMParseResult res = {.val = {.i32 = 0}, .err = 0};
     int32_t x;
     char *check = NULL;
@@ -450,7 +295,7 @@ CTSS_VMParseResult ctss_vm_parse_value(char *token) {
     return res;
 }
 
-void ctss_vm_execute_literal(CTSS_VM *vm, CTSS_VMValue v) {
+static void ctss_vm_execute_literal(CTSS_VM *vm, CTSS_VMValue v) {
     if (!vm->mode) {
         ctss_vm_push_ds(vm, v);
     } else {
@@ -671,7 +516,7 @@ CTSS_DECL_OP(read_string) {
     CTSS_DECL_OP(cmp_##name##_##type) {                                        \
         CTSS_VM_BOUNDS_CHECK_LO(dsp, ds, DS, 2)                                \
         CTSS_VMValue *dsp = vm->dsp - 1;                                       \
-        (*(dsp - 1)).i32 = (((*(dsp - 1)).type op (*dsp).type) ? 1 : 0);       \
+        (*(dsp - 1)).i32 = (((*(dsp - 1)).type op(*dsp).type) ? 1 : 0);        \
         vm->dsp = dsp;                                                         \
     }
 
@@ -743,8 +588,13 @@ CTSS_DECL_OP(cmp_eq_str) {
     vm->dsp = dsp;
 }
 
+char *ctss_vm_get_error_desc(uint8_t err) {
+    return ctss_vm_errors[err];
+}
+
 void ctss_vm_dump_error(CTSS_VM *vm) {
-    CTSS_PRINT(("error: %u (%s)\n", vm->error, ctss_vm_errors[vm->error]));
+    CTSS_PRINT(
+        ("error: %u (%s)\n", vm->error, ctss_vm_get_error_desc(vm->error)));
 }
 
 #ifdef CTSS_VM_FEATURE_PRINT
@@ -942,23 +792,3 @@ void ctss_vm_init_primitives(CTSS_VM *vm) {
 #endif
 }
 
-void repl(CTSS_VM *vm) {
-    char buf[256];
-    while (fgets(buf, 255, stdin)) {
-        ctss_vm_interpret(vm, buf);
-    }
-}
-
-int main() {
-    printf("CTSS_VM:\t%lu\n", sizeof(CTSS_VM));
-
-    CTSS_VM vm;
-    ctss_vm_init(&vm);
-    // ctss_vm_dump(&vm);
-
-    ctss_vm_init_primitives(&vm);
-    ctss_vm_interpret(&vm, ctss_vm_core_dict);
-    repl(&vm);
-
-    return 0;
-}
