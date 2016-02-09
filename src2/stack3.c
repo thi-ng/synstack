@@ -401,6 +401,7 @@ void ctss_vm_execute(CTSS_VM *vm) {
         CTSS_TRACE(("exe: %s %u %p\n", vm->mem[vm->ip - 1].head->name, vm->ip,
                     vm->mem[vm->ip].op));
         vm->mem[vm->ip].op(vm);
+        ctss_vm_next(vm);
     }
     CTSS_TRACE(("<<<< exe done\n"));
     if (vm->error) {
@@ -494,112 +495,93 @@ CTSS_DECL_OP(docolon) {
     CTSS_VMValue v = {.i32 = vm->np};
     ctss_vm_push_rs(vm, v);
     vm->np = vm->ip + 1;
-    ctss_vm_next(vm);
 }
 
 CTSS_DECL_OP(make_header) {
     ctss_vm_make_header(vm, ctss_vm_pop_ds(vm).str);
     CTSS_VMValue v = {.op = ctss_vm_op_docolon};
     ctss_vm_push_dict(vm, v);
-    ctss_vm_next(vm);
 }
 
 CTSS_DECL_OP(toggle_hidden) {
     CTSS_VMOpHeader *hd = vm->mem[vm->latest].head;
     ctss_vm_toggle_hidden(hd);
-    ctss_vm_next(vm);
     CTSS_TRACE(("toggle hidden: %s %u\n", hd->name, hd->flags));
 }
 
 CTSS_DECL_OP(here) {
     CTSS_VMValue v = {.i32 = vm->here};
     ctss_vm_push_ds(vm, v);
-    ctss_vm_next(vm);
 }
 
 CTSS_DECL_OP(set_here) {
     vm->here = ctss_vm_pop_ds(vm).i32;
-    ctss_vm_next(vm);
 }
 
 CTSS_DECL_OP(latest) {
     CTSS_VMValue v = {.i32 = vm->latest};
     ctss_vm_push_ds(vm, v);
-    ctss_vm_next(vm);
 }
 
 CTSS_DECL_OP(set_latest) {
     vm->latest = ctss_vm_pop_ds(vm).i32;
-    ctss_vm_next(vm);
 }
 
 CTSS_DECL_OP(push_dict) {
     ctss_vm_push_dict(vm, ctss_vm_pop_ds(vm));
-    ctss_vm_next(vm);
 }
 
 CTSS_DECL_OP(mem) {
     ctss_vm_push_ds(vm, vm->mem[ctss_vm_pop_ds(vm).i32]);
-    ctss_vm_next(vm);
 }
 
 CTSS_DECL_OP(set_mem) {
     uint32_t addr = ctss_vm_pop_ds(vm).i32;
     vm->mem[addr] = ctss_vm_pop_ds(vm);
-    ctss_vm_next(vm);
 }
 
 /*
   CTSS_DECL_OP(i32_addr) {
   CTSS_VMValue *dsp = vm->dsp - 1;
   (*dsp).addr = (*dsp).i32 + vm->mem;
-  ctss_vm_next(vm);
   }
 
   CTSS_DECL_OP(addr_i32) {
   CTSS_VMValue *dsp = vm->dsp - 1;
   (*dsp).i32 = (*dsp).addr - vm->mem;
-  ctss_vm_next(vm);
   }
 */
 
 CTSS_DECL_OP(immediate) {
     ctss_vm_set_immediate(vm, vm->latest, 1);
-    ctss_vm_next(vm);
 }
 
 CTSS_DECL_OP(interpret) {
     ctss_vm_interpret_mode(vm);
-    ctss_vm_next(vm);
 }
 
 CTSS_DECL_OP(compile) {
     ctss_vm_compile_mode(vm);
-    ctss_vm_next(vm);
 }
 
 CTSS_DECL_OP(find) {
     CTSS_VMValue v = {
         .i32 = ctss_vm_find_word(vm, ctss_vm_pop_ds(vm).str, vm->latest)};
     ctss_vm_push_ds(vm, v);
-    ctss_vm_next(vm);
 }
 
 CTSS_DECL_OP(cfa) {
     CTSS_VMValue cfa = {.i32 = ctss_vm_pop_ds(vm).i32 + 1};
     ctss_vm_push_ds(vm, cfa);
-    ctss_vm_next(vm);
 }
 
 CTSS_DECL_OP(lit) {
     ctss_vm_push_ds(vm, vm->mem[vm->np]);
     vm->np++;
-    ctss_vm_next(vm);
 }
 
 CTSS_DECL_OP(ret) {
     vm->np = ctss_vm_pop_rs(vm).i32;
-    ctss_vm_next(vm);
 }
 
 CTSS_DECL_OP(swap) {
@@ -608,27 +590,23 @@ CTSS_DECL_OP(swap) {
     CTSS_VMValue a = *dsp;
     *dsp = *(dsp - 1);
     *(dsp - 1) = a;
-    ctss_vm_next(vm);
 }
 
 CTSS_DECL_OP(dup) {
     CTSS_VM_BOUNDS_CHECK_BOTH(dsp, ds, DS, 1, 1)
     *vm->dsp = *(vm->dsp - 1);
     vm->dsp++;
-    ctss_vm_next(vm);
 }
 
 CTSS_DECL_OP(drop) {
     CTSS_VM_BOUNDS_CHECK_LO(dsp, ds, DS, 1)
     vm->dsp--;
-    ctss_vm_next(vm);
 }
 
 CTSS_DECL_OP(over) {
     CTSS_VM_BOUNDS_CHECK_BOTH(dsp, ds, DS, 2, 1)
     *vm->dsp = *(vm->dsp - 2);
     vm->dsp++;
-    ctss_vm_next(vm);
 }
 
 CTSS_DECL_OP(rot) {
@@ -638,7 +616,6 @@ CTSS_DECL_OP(rot) {
     *(dsp - 2) = *(dsp - 1);
     *(dsp - 1) = *dsp;
     *dsp = c;
-    ctss_vm_next(vm);
 }
 
 CTSS_DECL_OP(rot_inv) {
@@ -648,30 +625,26 @@ CTSS_DECL_OP(rot_inv) {
     *dsp = *(dsp - 1);
     *(dsp - 1) = *(dsp - 2);
     *(dsp - 2) = a;
-    ctss_vm_next(vm);
 }
 
 CTSS_DECL_OP(rpush) {
     ctss_vm_push_rs(vm, ctss_vm_pop_ds(vm));
-    ctss_vm_next(vm);
 }
 
 CTSS_DECL_OP(rpop) {
     ctss_vm_push_ds(vm, ctss_vm_pop_rs(vm));
-    ctss_vm_next(vm);
 }
 
 CTSS_DECL_OP(branch) {
     vm->np += vm->mem[vm->np].i32;
-    ctss_vm_next(vm);
 }
 
 CTSS_DECL_OP(branch0) {
     if (ctss_vm_pop_ds(vm).i32 != 0) {
         vm->np++;
-        ctss_vm_next(vm);
     } else {
-        CTSS_OP(branch)(vm);
+        // CTSS_OP(branch)(vm);
+        vm->np += vm->mem[vm->np].i32;
     }
 }
 
@@ -679,7 +652,6 @@ CTSS_DECL_OP(read_token) {
     char *token = ctss_vm_buffer_token(vm, ctss_vm_read_token(vm));
     CTSS_VMValue v = {.str = token};
     ctss_vm_push_ds(vm, v);
-    ctss_vm_next(vm);
 }
 
 CTSS_DECL_OP(read_string) {
@@ -693,7 +665,6 @@ CTSS_DECL_OP(read_string) {
         ctype b = (*(dsp - 1)).type;                                           \
         (*(dsp - 1)).type = aa op bb;                                          \
         vm->dsp = dsp;                                                         \
-        ctss_vm_next(vm);                                                      \
     }
 
 #define CTSS_DECL_CMP_OP(name, op, type, ctype)                                \
@@ -705,7 +676,6 @@ CTSS_DECL_OP(read_string) {
         CTSS_VMValue v = {.i32 = ((a op b) ? 1 : 0)};                          \
         *(dsp - 1) = v;                                                        \
         vm->dsp = dsp;                                                         \
-        ctss_vm_next(vm);                                                      \
     }
 
 CTSS_DECL_MATH_OP(add, +, a, b, i32, uint32_t)
@@ -719,7 +689,6 @@ CTSS_DECL_MATH_OP(log_or, ||, a, b, i32, uint32_t);
 CTSS_DECL_OP(not_i32) {
     CTSS_VM_BOUNDS_CHECK_LO(dsp, ds, DS, 1)
     (*(vm->dsp - 1)).i32 = !(*(vm->dsp - 1)).i32;
-    ctss_vm_next(vm);
 }
 
 CTSS_DECL_CMP_OP(lt, <, i32, uint32_t)
@@ -740,7 +709,6 @@ CTSS_DECL_OP(mod_f32) {
     CTSS_VMValue *dsp = vm->dsp - 1;
     (*(dsp - 1)).f32 = fmodf((*(dsp - 1)).f32, (*dsp).f32);
     vm->dsp = dsp;
-    ctss_vm_next(vm);
 }
 
 CTSS_DECL_CMP_OP(lt, <, f32, float)
@@ -753,25 +721,21 @@ CTSS_DECL_CMP_OP(neq, !=, f32, float)
 CTSS_DECL_OP(i32_f32) {
     CTSS_VM_BOUNDS_CHECK_LO(dsp, ds, DS, 1)
     (*(vm->dsp - 1)).f32 = (float)((*(vm->dsp - 1)).i32);
-    ctss_vm_next(vm);
 }
 
 CTSS_DECL_OP(f32_i32) {
     CTSS_VM_BOUNDS_CHECK_LO(dsp, ds, DS, 1)
     (*(vm->dsp - 1)).i32 = (int32_t)((*(vm->dsp - 1)).f32);
-    ctss_vm_next(vm);
 }
 
 CTSS_DECL_OP(sinf) {
     CTSS_VM_BOUNDS_CHECK_LO(dsp, ds, DS, 1)
     (*(vm->dsp - 1)).f32 = sinf((*(vm->dsp - 1)).f32);
-    ctss_vm_next(vm);
 }
 
 CTSS_DECL_OP(cosf) {
     CTSS_VM_BOUNDS_CHECK_LO(dsp, ds, DS, 1)
     (*(vm->dsp - 1)).f32 = cosf((*(vm->dsp - 1)).f32);
-    ctss_vm_next(vm);
 }
 #endif /* CTSS_VM_FEATURE_FLOAT */
 
@@ -780,7 +744,6 @@ CTSS_DECL_OP(cmp_eq_str) {
     CTSS_VMValue *dsp = vm->dsp - 1;
     (*(dsp - 1)).i32 = !strcmp((*(dsp - 1)).str, (*dsp).str);
     vm->dsp = dsp;
-    ctss_vm_next(vm);
 }
 
 void ctss_vm_dump_error(CTSS_VM *vm) {
@@ -848,42 +811,34 @@ void ctss_vm_dump_mem(CTSS_VM *vm) {
 
 CTSS_DECL_OP(dump_vm) {
     ctss_vm_dump(vm);
-    ctss_vm_next(vm);
 }
 
 CTSS_DECL_OP(dump_mem) {
     ctss_vm_dump_mem(vm);
-    ctss_vm_next(vm);
 }
 
 CTSS_DECL_OP(dump_words) {
     ctss_vm_dump_words(vm);
-    ctss_vm_next(vm);
 }
 
 CTSS_DECL_OP(dump_ds) {
     ctss_vm_dump_ds(vm);
-    ctss_vm_next(vm);
 }
 
 CTSS_DECL_OP(dump_rs) {
     ctss_vm_dump_rs(vm);
-    ctss_vm_next(vm);
 }
 
 CTSS_DECL_OP(dump_tos_i32) {
     ctss_vm_dump_tos_i32(vm);
-    ctss_vm_next(vm);
 }
 
 CTSS_DECL_OP(dump_tos_i32_hex) {
     ctss_vm_dump_tos_i32_hex(vm);
-    ctss_vm_next(vm);
 }
 
 CTSS_DECL_OP(dump_tos_f32) {
     ctss_vm_dump_tos_f32(vm);
-    ctss_vm_next(vm);
 }
 #endif /* CTSS_VM_FEATURE_PRINT */
 
