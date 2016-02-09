@@ -25,6 +25,6 @@ char *ctss_vm_core_dict =
 
   ": recur compile> branch latest 2 + dict-here - push-dict ; immediate!" NL
 
-  ": val> read-token> create-header 'lit .s push-dict compile> ret ;";
+  ": val> read-token> create-header 'lit push-dict compile> ret ;";
 
 #undef NL

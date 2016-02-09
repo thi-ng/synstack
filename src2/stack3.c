@@ -21,9 +21,9 @@
 
 #include "core_dict.h"
 
+#define CTSS_VM_FEATURE_BOUNDS
 #define CTSS_VM_FEATURE_PRINT
 //#define CTSS_VM_FEATURE_TRACE
-//#define CTSS_VM_FEATURE_BOUNDS
 
 #ifdef CTSS_VM_FEATURE_PRINT
 
@@ -170,6 +170,7 @@ CTSS_DECL_OP(docolon);
 
 void ctss_vm_dump(CTSS_VM *vm);
 void ctss_vm_dump_ds(CTSS_VM *vm);
+void ctss_vm_dump_error(CTSS_VM *vm);
 
 static uint32_t ctss_vm_cfa_lit;
 static CTSS_VMValue ctss_vm_defval = {.i32 = 0xdeadbeef};
@@ -180,7 +181,8 @@ static char *ctss_vm_errors[] = {"",
                                  "DS overflow",
                                  "RS underflow",
                                  "RS overflow",
-                                 "out of memory"};
+                                 "out of memory",
+                                 "token too long"};
 
 void ctss_vm_init(CTSS_VM *vm) {
     memset(vm->ds, 0, sizeof(CTSS_VMValue) * CTSS_VM_DS_SIZE);
@@ -375,7 +377,7 @@ char *ctss_vm_read_token(CTSS_VM *vm) {
         c = ctss_vm_read_char(vm);
         vm->token[pos] = c;
     }
-    if (pos == CTSS_VM_TOKEN_SIZE) {
+    if (pos == CTSS_VM_TOKEN_SIZE - 1) {
         vm->error = CTSS_VM_ERR_TOKEN_OVERFLOW;
         return NULL;
     }
@@ -405,7 +407,7 @@ void ctss_vm_execute(CTSS_VM *vm) {
     }
     CTSS_TRACE(("<<<< exe done\n"));
     if (vm->error) {
-        CTSS_PRINT(("error: %u (%s)\n", vm->error, ctss_vm_errors[vm->error]));
+      ctss_vm_dump_error(vm);
     }
 }
 
@@ -473,15 +475,17 @@ uint32_t ctss_vm_execute_token(CTSS_VM *vm, char *token) {
 }
 
 uint32_t ctss_vm_interpret(CTSS_VM *vm, char *input) {
+  vm->error = CTSS_VM_ERR_OK;
     ctss_vm_init_reader(vm, input);
     char *token = ctss_vm_read_token(vm);
-    uint32_t err = CTSS_VM_ERR_OK;
-    vm->error = err;
-    while (token && !err) {
-        err = ctss_vm_execute_token(vm, token);
+    while (token && !vm->error) {
+        ctss_vm_execute_token(vm, token);
         token = ctss_vm_read_token(vm);
     }
-    return err;
+    if (vm->error) {
+      ctss_vm_dump_error(vm);
+    }
+    return vm->error;
 }
 
 CTSS_DECL_OP(create_header) {
@@ -820,6 +824,10 @@ void ctss_vm_dump_mem(CTSS_VM *vm) {
         CTSS_PRINT(("\n"));
         len -= 8;
     }
+}
+
+void ctss_vm_dump_error(CTSS_VM *vm) {
+  CTSS_PRINT(("error: %u (%s)\n", vm->error, ctss_vm_errors[vm->error]));
 }
 
 CTSS_DECL_OP(dump_vm) {
