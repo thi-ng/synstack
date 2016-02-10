@@ -493,6 +493,17 @@ CTSS_DECL_OP(branch0) {
     }
 }
 
+CTSS_DECL_OP(call) {
+    CTSS_VM_BOUNDS_CHECK_LO(dsp, ds, DS, 1)
+    vm->ip = (*--vm->dsp).i32; // FIXME must not call next() for this
+}
+
+CTSS_DECL_OP(jump) {
+    CTSS_VM_BOUNDS_CHECK_LO(dsp, ds, DS, 1)
+    vm->np = (*--vm->dsp).i32;
+    CTSS_TRACE(("jump: %04x\n", vm->np));
+}
+
 CTSS_DECL_OP(read_token) {
     char *token = ctss_vm_buffer_token(vm, ctss_vm_read_token(vm));
     CTSS_VMValue v = {.str = token};
@@ -648,8 +659,7 @@ void ctss_vm_dump_mem(CTSS_VM *vm) {
     while (len) {
         CTSS_PRINT(("%04lx: ", addr - vm->mem));
         for (uint8_t i = 0; i < 8; i++) {
-            CTSS_PRINT(("%08x ", (*addr).i32));
-            addr++;
+            CTSS_PRINT(("%08x ", (*addr++).i32));
         }
         CTSS_PRINT(("\n"));
         len -= 8;
@@ -694,6 +704,8 @@ void ctss_vm_init_primitives(CTSS_VM *vm) {
     CTSS_DEFNATIVE("lit", lit);
     ctss_vm_cfa_lit = lit + 1;
     CTSS_DEFNATIVE("mk-header", make_header);
+    CTSS_DEFNATIVE("call", call);
+    CTSS_DEFNATIVE("jump", jump);
 
     // stack
     CTSS_DEFNATIVE("swap", swap);

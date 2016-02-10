@@ -13,13 +13,13 @@
             *bb = (*aa++)op(*bb);                                              \
             *bb++;                                                             \
         }                                                                      \
-        (*(dsp - 1)) = *dsp;                                                   \
         vm->dsp = dsp;                                                         \
     }
 
 CTSS_DECL_BUF_OP(add_buf, +)
 CTSS_DECL_BUF_OP(mul_buf, *)
 
+// ( -- buf )
 CTSS_DECL_OP(make_buf) {
     CTSS_VM_BOUNDS_CHECK_HI(dsp, ds, DS, 1);
     CTSS_VMValue v = {.synthOp =

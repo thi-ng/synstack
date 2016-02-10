@@ -26,8 +26,9 @@ char *ctss_vm_core_dict =
   ": recur compile> branch latest 2 + here - >dict ; immediate!" NL
 
   ": val> read-token> mk-header 'lit >dict compile> ret ;" NL
+  ": set> read-token> find 3 + ! ;" NL
 
-  "here 16 + val> *user-start*" NL
-  ": wipe *user-start* dup here! 11 - latest! ;";
+  "here 15 + val> *user-start*" NL
+  ": wipe *user-start* dup here! 10 - latest! ;";
 
 #undef NL

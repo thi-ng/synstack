@@ -33,9 +33,7 @@ CTSS_DECL_OP(process_osc_sin) {
     float phase = osc->phase;
     uint32_t len = CTSS_AUDIO_BUFFER_SIZE;
     while (--len) {
-        float f = *freq++;
-        phase += f;
-        printf("%f %f\n", phase, f);
+        phase += *freq++;
         TRUNC_PHASE(phase);
         *buf++ = sinf(phase);
     }
