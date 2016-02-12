@@ -32,7 +32,8 @@ static char *ctss_vm_errors[] = {"",
                                  "RS underflow",
                                  "RS overflow",
                                  "out of memory",
-                                 "token too long"};
+                                 "token too long",
+                                 "unterminated string"};
 
 void ctss_vm_init(CTSS_VM *vm) {
     memset(vm->ds, 0, sizeof(CTSS_VMValue) * CTSS_VM_DS_SIZE);
@@ -641,33 +642,25 @@ CTSS_DECL_OP(read_token) {
 }
 
 CTSS_DECL_OP(read_str) {
-    char *acc = NULL;
-    while (1) {
-        char *token = ctss_vm_read_token(vm);
-        if (strcmp(token, "\"")) {
-            if (acc) {
-                free(acc);
-                uint32_t alen = strlen(acc);
-                uint32_t len = alen + strlen(token) + 2; // space + final \0
-                char *acc2 = malloc(len);
-                strncpy(acc2, acc, alen);
-                acc2[alen] = ' ';
-                acc2[alen + 1] = '\0';
-                strcat(acc2, token);
-                CTSS_LOG(("allocating: %u bytes, new: %s (%p), old: %p\n", len,
-                          acc2, acc2, acc));
-                acc = acc2;
-            } else {
-                acc = strdup(token);
-            }
-        } else {
-            break;
-        }
+    uint32_t pos = 0;
+    char c = ctss_vm_reader_skip_ws(vm);
+    if (!c) {
+        vm->error = CTSS_VM_ERR_UNTERMINATED_STRING;
+        return;
     }
-    if (acc == NULL) {
-        acc = strdup("");
+    vm->token[0] = c;
+    while (c != '"' && pos < CTSS_VM_TOKEN_SIZE - 1) {
+        pos++;
+        c = ctss_vm_read_char(vm);
+        vm->token[pos] = c;
     }
-    CTSS_VMValue v = {.str = acc};
+    if (pos == CTSS_VM_TOKEN_SIZE - 1) {
+        vm->error = CTSS_VM_ERR_TOKEN_OVERFLOW;
+        return;
+    }
+    vm->token[pos] = 0;
+    char *str = strdup(vm->token);
+    CTSS_VMValue v = {.str = str};
     if (vm->mode) {
         CTSS_VMValue lit = {.i32 = ctss_vm_cfa_lit};
         ctss_vm_push_dict(vm, lit);
@@ -702,7 +695,7 @@ CTSS_DECL_OP(concat_str) {
     char *c = malloc(clen);
     strncpy(c, b, blen);
     strcat(c, a);
-    CTSS_LOG(("b: %s (%p), a: %s (%p) -> %s (%p)\n", b, b, a, a, c, c));
+    CTSS_TRACE(("b: %s (%p), a: %s (%p) -> %s (%p)\n", b, b, a, a, c, c));
     (*(dsp - 1)).str = c;
     vm->dsp = dsp;
 }
