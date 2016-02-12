@@ -544,6 +544,57 @@ CTSS_DECL_OP(not_i32) {
     (*(vm->dsp - 1)).i32 = !(*(vm->dsp - 1)).i32;
 }
 
+CTSS_DECL_OP(bit_and_i32) {
+    CTSS_VM_BOUNDS_CHECK_LO(dsp, ds, DS, 2)
+    CTSS_VMValue *dsp = vm->dsp - 1;
+    (*(dsp - 1)).i32 &= (*dsp).i32;
+    vm->dsp = dsp;
+}
+
+CTSS_DECL_OP(bit_or_i32) {
+    CTSS_VM_BOUNDS_CHECK_LO(dsp, ds, DS, 2)
+    CTSS_VMValue *dsp = vm->dsp - 1;
+    (*(dsp - 1)).i32 |= (*dsp).i32;
+    vm->dsp = dsp;
+}
+
+CTSS_DECL_OP(bit_xor_i32) {
+    CTSS_VM_BOUNDS_CHECK_LO(dsp, ds, DS, 2)
+    CTSS_VMValue *dsp = vm->dsp - 1;
+    (*(dsp - 1)).i32 ^= (*dsp).i32;
+    vm->dsp = dsp;
+}
+
+CTSS_DECL_OP(lsl_i32) {
+    CTSS_VM_BOUNDS_CHECK_LO(dsp, ds, DS, 2)
+    CTSS_VMValue *dsp = vm->dsp - 1;
+    (*(dsp - 1)).i32 <<= (*dsp).i32;
+    vm->dsp = dsp;
+}
+
+CTSS_DECL_OP(asr_i32) {
+    CTSS_VM_BOUNDS_CHECK_LO(dsp, ds, DS, 2)
+    CTSS_VMValue *dsp = vm->dsp - 1;
+    (*(dsp - 1)).i32 >>= (*dsp).i32;
+    vm->dsp = dsp;
+}
+
+CTSS_DECL_OP(lsr_i32) {
+    CTSS_VM_BOUNDS_CHECK_LO(dsp, ds, DS, 2)
+    CTSS_VMValue *dsp = vm->dsp - 1;
+    (*(dsp - 1)).i32 = (int32_t)((uint32_t)(*(dsp - 1)).i32 >> (*dsp).i32);
+    vm->dsp = dsp;
+}
+
+CTSS_DECL_OP(ror_i32) {
+    CTSS_VM_BOUNDS_CHECK_LO(dsp, ds, DS, 2)
+    CTSS_VMValue *dsp = vm->dsp - 1;
+    int32_t a = (*dsp).i32;
+    uint32_t b = (uint32_t)(*(dsp - 1)).i32;
+    (*(dsp - 1)).i32 = (int32_t)((b >> a) | (b & ((1 << a) - 1)) << (31 - a));
+    vm->dsp = dsp;
+}
+
 CTSS_DECL_CMP_OP(lt, <, i32)
 CTSS_DECL_CMP_OP(gt, >, i32)
 CTSS_DECL_CMP_OP(le, <=, i32)
@@ -757,6 +808,13 @@ void ctss_vm_init_primitives(CTSS_VM *vm) {
     CTSS_DEFNATIVE("-", sub_i32);
     CTSS_DEFNATIVE("/", div_i32);
     CTSS_DEFNATIVE("mod", mod_i32);
+    CTSS_DEFNATIVE("&", bit_and_i32);
+    CTSS_DEFNATIVE("|", bit_or_i32);
+    CTSS_DEFNATIVE("^", bit_xor_i32);
+    CTSS_DEFNATIVE("<<", lsl_i32);
+    CTSS_DEFNATIVE(">>", asr_i32);
+    CTSS_DEFNATIVE("u>>", lsr_i32);
+    CTSS_DEFNATIVE("ror", ror_i32);
 
     CTSS_DEFNATIVE("<", cmp_lt_i32);
     CTSS_DEFNATIVE(">", cmp_gt_i32);
