@@ -504,15 +504,6 @@ CTSS_DECL_OP(jump) {
     CTSS_TRACE(("jump: %04x\n", vm->np));
 }
 
-CTSS_DECL_OP(read_token) {
-    char *token = ctss_vm_buffer_token(vm, ctss_vm_read_token(vm));
-    CTSS_VMValue v = {.str = token};
-    ctss_vm_push_ds(vm, v);
-}
-
-CTSS_DECL_OP(read_string) {
-}
-
 #define CTSS_DECL_MATH_OP(name, op, aa, bb, type, ctype)                       \
     CTSS_DECL_OP(name##_##type) {                                              \
         CTSS_VM_BOUNDS_CHECK_LO(dsp, ds, DS, 2)                                \
@@ -643,10 +634,83 @@ CTSS_DECL_OP(cosf) {
 }
 #endif /* CTSS_VM_FEATURE_FLOAT */
 
+CTSS_DECL_OP(read_token) {
+    char *token = ctss_vm_buffer_token(vm, ctss_vm_read_token(vm));
+    CTSS_VMValue v = {.str = token};
+    ctss_vm_push_ds(vm, v);
+}
+
+CTSS_DECL_OP(read_str) {
+    char *acc = NULL;
+    while (1) {
+        char *token = ctss_vm_read_token(vm);
+        if (strcmp(token, "\"")) {
+            if (acc) {
+                free(acc);
+                uint32_t alen = strlen(acc);
+                uint32_t len = alen + strlen(token) + 2; // space + final \0
+                char *acc2 = malloc(len);
+                strncpy(acc2, acc, alen);
+                acc2[alen] = ' ';
+                acc2[alen + 1] = '\0';
+                strcat(acc2, token);
+                CTSS_LOG(("allocating: %u bytes, new: %s (%p), old: %p\n", len,
+                          acc2, acc2, acc));
+                acc = acc2;
+            } else {
+                acc = strdup(token);
+            }
+        } else {
+            break;
+        }
+    }
+    if (acc == NULL) {
+        acc = strdup("");
+    }
+    CTSS_VMValue v = {.str = acc};
+    if (vm->mode) {
+        CTSS_VMValue lit = {.i32 = ctss_vm_cfa_lit};
+        ctss_vm_push_dict(vm, lit);
+        ctss_vm_push_dict(vm, v);
+    } else {
+        ctss_vm_push_ds(vm, v);
+    }
+}
+
+CTSS_DECL_OP(i32_str) {
+    static char buf[16];
+    CTSS_VM_BOUNDS_CHECK_LO(dsp, ds, DS, 1)
+    CTSS_VMValue *dsp = vm->dsp - 1;
+    snprintf(buf, 16, "%d", (*dsp).i32);
+    (*(dsp)).str = strdup(buf);
+}
+
 CTSS_DECL_OP(cmp_eq_str) {
     CTSS_VM_BOUNDS_CHECK_LO(dsp, ds, DS, 2)
     CTSS_VMValue *dsp = vm->dsp - 1;
     (*(dsp - 1)).i32 = !strcmp((*(dsp - 1)).str, (*dsp).str);
+    vm->dsp = dsp;
+}
+
+CTSS_DECL_OP(concat_str) {
+    CTSS_VM_BOUNDS_CHECK_LO(dsp, ds, DS, 2)
+    CTSS_VMValue *dsp = vm->dsp - 1;
+    char *a = (*dsp).str;
+    char *b = (*(dsp - 1)).str;
+    uint32_t blen = strlen(b) + 1;
+    uint32_t clen = blen + strlen(a);
+    char *c = malloc(clen);
+    strncpy(c, b, blen);
+    strcat(c, a);
+    CTSS_LOG(("b: %s (%p), a: %s (%p) -> %s (%p)\n", b, b, a, a, c, c));
+    (*(dsp - 1)).str = c;
+    vm->dsp = dsp;
+}
+
+CTSS_DECL_OP(free_str) {
+    CTSS_VM_BOUNDS_CHECK_LO(dsp, ds, DS, 2)
+    CTSS_VMValue *dsp = vm->dsp - 1;
+    free((*dsp).str);
     vm->dsp = dsp;
 }
 
@@ -823,7 +887,12 @@ void ctss_vm_init_primitives(CTSS_VM *vm) {
     CTSS_DEFNATIVE("==", cmp_eq_i32);
     CTSS_DEFNATIVE("<>", cmp_neq_i32);
 
+    CTSS_DEFNATIVE("\"", read_str);
+    ctss_vm_set_immediate(vm, read_str, 1);
     CTSS_DEFNATIVE("s==", cmp_eq_str);
+    CTSS_DEFNATIVE("s+", concat_str);
+    CTSS_DEFNATIVE("sfree", free_str);
+    CTSS_DEFNATIVE("i>s", i32_str);
 
     CTSS_DEFNATIVE("and", log_and_i32);
     CTSS_DEFNATIVE("or", log_or_i32);
