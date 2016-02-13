@@ -9,7 +9,7 @@
         float *aa = a;                                                         \
         float *bb = b;                                                         \
         uint32_t len = CTSS_AUDIO_BUFFER_SIZE;                                 \
-        while (--len) {                                                        \
+        while (len--) {                                                        \
             *bb = (*aa++)op(*bb);                                              \
             *bb++;                                                             \
         }                                                                      \
@@ -34,7 +34,7 @@ CTSS_DECL_OP(fill_buf) {
     float *addr = CTSS_BUF(dsp);
     const float x = (*(dsp - 1)).f32;
     uint32_t len = CTSS_AUDIO_BUFFER_SIZE;
-    while (--len) {
+    while (len--) {
         *addr++ = x;
     }
     *(dsp - 1) = *dsp;
@@ -46,7 +46,7 @@ CTSS_DECL_OP(dump_buf) {
     CTSS_VM_BOUNDS_CHECK_LO(dsp, ds, DS, 1);
     float *addr = CTSS_BUF(--vm->dsp);
     uint32_t len = CTSS_AUDIO_BUFFER_SIZE;
-    while (--len) {
+    while (len--) {
         CTSS_PRINT(("%f ", *addr++));
     }
     CTSS_PRINT(("\n"));

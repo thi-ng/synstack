@@ -9,7 +9,7 @@ char *ctss_vm_core_dict =
     ": begin here ; immediate! "
     ": until compile> 0branch here - >dict ; immediate! "
 
-    ": ( begin read-token> \" ) \" s== until ; immediate! "
+    ": ( begin read-token> \" )\" s== until ; immediate! "
 
     ": if compile> 0branch here 0 >dict ; immediate! "
     ": -save-offset dup here swap - swap ! ; "
@@ -25,8 +25,11 @@ char *ctss_vm_core_dict =
 
     ": recur compile> branch latest 2 + here - >dict ; immediate! "
 
-    ": val> read-token> mk-header 'lit >dict compile> ret ; "
-    ": set> read-token> find 3 + ! ; "
+    ": val> ( x -- ) read-token> mk-header 'lit >dict compile> ret ; "
+    ": set> ( x -- ) read-token> find 3 + ! ; "
 
-    "here 15 + val> *user-start* "
-    ": wipe *user-start* dup here! 10 - latest! ; ";
+    ": var> ( -- addr ) "
+    "  here dup dup 1 + here! read-token> mk-header 'lit >dict compile> ret ; "
+
+    "here 17 + var> *user-start* ! "
+    ": wipe *user-start* @ dup here! 11 - latest! ; ";

@@ -179,6 +179,7 @@ void ctss_vm_init_reader(CTSS_VM *vm, char *input);
 char *ctss_vm_read_token(CTSS_VM *vm);
 char *ctss_vm_buffer_token(CTSS_VM *vm, char *token);
 
+void ctss_vm_execute_word(CTSS_VM *vm, uint32_t addr);
 uint32_t ctss_vm_execute_token(CTSS_VM *vm, char *token);
 uint32_t ctss_vm_interpret(CTSS_VM *vm, char *input);
 

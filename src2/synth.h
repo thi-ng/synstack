@@ -40,3 +40,4 @@ typedef struct { CTSS_VM vm; } CTSS_Synth;
 #include "buffer.h"
 #include "osc.h"
 #include "adsr.h"
+#include "foldback.h"

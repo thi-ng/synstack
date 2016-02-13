@@ -255,7 +255,7 @@ static void ctss_vm_execute(CTSS_VM *vm) {
     }
 }
 
-static void ctss_vm_execute_word(CTSS_VM *vm, uint32_t addr) {
+void ctss_vm_execute_word(CTSS_VM *vm, uint32_t addr) {
     CTSS_VMOpHeader *hd = vm->mem[addr].head;
     if (vm->mode == 0 || ctss_vm_isimmediate(hd) != 0) {
         vm->ip = addr + 1;
@@ -659,8 +659,9 @@ CTSS_DECL_OP(read_str) {
         return;
     }
     vm->token[pos] = 0;
-    char *str = strdup(vm->token);
-    CTSS_VMValue v = {.str = str};
+    CTSS_VMValue v = {.str = strdup(vm->token)};
+    printf("string lit: %s (%p), token: %s (%p)\n", v.str, v.str, vm->token,
+           vm->token);
     if (vm->mode) {
         CTSS_VMValue lit = {.i32 = ctss_vm_cfa_lit};
         ctss_vm_push_dict(vm, lit);
@@ -668,6 +669,13 @@ CTSS_DECL_OP(read_str) {
     } else {
         ctss_vm_push_ds(vm, v);
     }
+}
+
+CTSS_DECL_OP(print_str) {
+    CTSS_VM_BOUNDS_CHECK_LO(dsp, ds, DS, 1)
+    CTSS_VMValue *dsp = vm->dsp - 1;
+    printf("%s\n", (*dsp).str);
+    vm->dsp = dsp;
 }
 
 CTSS_DECL_OP(i32_str) {
@@ -921,5 +929,6 @@ void ctss_vm_init_primitives(CTSS_VM *vm) {
     CTSS_DEFNATIVE(".", dump_tos_i32);
     CTSS_DEFNATIVE(".h", dump_tos_i32_hex);
     CTSS_DEFNATIVE(".f", dump_tos_f32);
+    CTSS_DEFNATIVE("print", print_str);
 #endif
 }
