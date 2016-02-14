@@ -33,7 +33,40 @@ static char *ctss_vm_errors[] = {"",
                                  "RS overflow",
                                  "out of memory",
                                  "token too long",
-                                 "unterminated string"};
+                                 "unterminated string",
+                                 "IO error"};
+
+#define INV_RAND_MAX (float)(1.0 / UINT32_MAX)
+#define INV_RAND_MAX2 (float)(2.0 / UINT32_MAX)
+
+static uint32_t ctss_vm_rndX = 0xdecafbad;
+static uint32_t ctss_vm_rndY = 0x2fa9d05b;
+static uint32_t ctss_vm_rndZ = 0x041f67e3;
+static uint32_t ctss_vm_rndW = 0x5c83ec1a;
+
+// xorshift128 - https://en.wikipedia.org/wiki/Xorshift
+static inline uint32_t ctss__rand() {
+    uint32_t t = ctss_vm_rndX;
+    t ^= t << 11;
+    t ^= t >> 8;
+    ctss_vm_rndX = ctss_vm_rndY;
+    ctss_vm_rndY = ctss_vm_rndZ;
+    ctss_vm_rndZ = ctss_vm_rndW;
+    ctss_vm_rndW ^= ctss_vm_rndW >> 19;
+    return ctss_vm_rndW ^= t;
+}
+
+static inline float ctss_rand_i32(const int32_t min, const int32_t max) {
+    return min + ctss__rand() % (max - min);
+}
+
+static inline float ctss_rand_f32(const float min, const float max) {
+    return min + (float)ctss__rand() * INV_RAND_MAX * (max - min);
+}
+
+static inline float ctss_normrandf() {
+    return (float)ctss__rand() * INV_RAND_MAX2 - 1.0f;
+}
 
 void ctss_vm_init(CTSS_VM *vm) {
     memset(vm->ds, 0, sizeof(CTSS_VMValue) * CTSS_VM_DS_SIZE);
@@ -594,7 +627,15 @@ CTSS_DECL_CMP_OP(ge, >=, i32)
 CTSS_DECL_CMP_OP(eq, ==, i32)
 CTSS_DECL_CMP_OP(neq, !=, i32)
 
+CTSS_DECL_OP(rand_i32) {
+    CTSS_VM_BOUNDS_CHECK_LO(dsp, ds, DS, 2)
+    (*(vm->dsp - 2)).i32 =
+        ctss_rand_i32((*(vm->dsp - 2)).i32, (*(vm->dsp - 1)).i32);
+    vm->dsp--;
+}
+
 #ifdef CTSS_VM_FEATURE_FLOAT
+
 CTSS_DECL_MATH_OP(add, +, a, b, f32, float)
 CTSS_DECL_MATH_OP(mul, *, a, b, f32, float)
 CTSS_DECL_MATH_OP(sub, -, b, a, f32, float)
@@ -624,15 +665,29 @@ CTSS_DECL_OP(f32_i32) {
     (*(vm->dsp - 1)).i32 = (int32_t)((*(vm->dsp - 1)).f32);
 }
 
-CTSS_DECL_OP(sinf) {
+CTSS_DECL_OP(sin_f32) {
     CTSS_VM_BOUNDS_CHECK_LO(dsp, ds, DS, 1)
     (*(vm->dsp - 1)).f32 = sinf((*(vm->dsp - 1)).f32);
 }
 
-CTSS_DECL_OP(cosf) {
+CTSS_DECL_OP(cos_f32) {
     CTSS_VM_BOUNDS_CHECK_LO(dsp, ds, DS, 1)
     (*(vm->dsp - 1)).f32 = cosf((*(vm->dsp - 1)).f32);
 }
+
+CTSS_DECL_OP(pow_f32) {
+    CTSS_VM_BOUNDS_CHECK_LO(dsp, ds, DS, 2)
+    (*(vm->dsp - 2)).f32 = powf((*(vm->dsp - 2)).f32, (*(vm->dsp - 1)).f32);
+    vm->dsp--;
+}
+
+CTSS_DECL_OP(rand_f32) {
+    CTSS_VM_BOUNDS_CHECK_LO(dsp, ds, DS, 2)
+    (*(vm->dsp - 2)).f32 =
+        ctss_rand_f32((*(vm->dsp - 2)).f32, (*(vm->dsp - 1)).f32);
+    vm->dsp--;
+}
+
 #endif /* CTSS_VM_FEATURE_FLOAT */
 
 CTSS_DECL_OP(read_token) {
@@ -669,6 +724,13 @@ CTSS_DECL_OP(read_str) {
     } else {
         ctss_vm_push_ds(vm, v);
     }
+}
+
+CTSS_DECL_OP(read_line_comment) {
+    char c;
+    do {
+        c = ctss_vm_read_char(vm);
+    } while (c && c != '\n');
 }
 
 CTSS_DECL_OP(print_str) {
@@ -890,6 +952,9 @@ void ctss_vm_init_primitives(CTSS_VM *vm) {
 
     CTSS_DEFNATIVE("\"", read_str);
     ctss_vm_set_immediate(vm, read_str, 1);
+    CTSS_DEFNATIVE("\\", read_line_comment);
+    ctss_vm_set_immediate(vm, read_line_comment, 1);
+
     CTSS_DEFNATIVE("s==", cmp_eq_str);
     CTSS_DEFNATIVE("s+", concat_str);
     CTSS_DEFNATIVE("sfree", free_str);
@@ -898,6 +963,8 @@ void ctss_vm_init_primitives(CTSS_VM *vm) {
     CTSS_DEFNATIVE("and", log_and_i32);
     CTSS_DEFNATIVE("or", log_or_i32);
     CTSS_DEFNATIVE("not", not_i32);
+
+    CTSS_DEFNATIVE("rand", rand_i32);
 
 #ifdef CTSS_VM_FEATURE_FLOAT
     CTSS_DEFNATIVE("f+", add_f32);
@@ -913,8 +980,10 @@ void ctss_vm_init_primitives(CTSS_VM *vm) {
     CTSS_DEFNATIVE("f<>", cmp_neq_f32);
     CTSS_DEFNATIVE("i>f", i32_f32);
     CTSS_DEFNATIVE("f>i", f32_i32);
-    CTSS_DEFNATIVE("sinf", sinf);
-    CTSS_DEFNATIVE("cosf", cosf);
+    CTSS_DEFNATIVE("fsin", sin_f32);
+    CTSS_DEFNATIVE("fcos", cos_f32);
+    CTSS_DEFNATIVE("fpow", pow_f32);
+    CTSS_DEFNATIVE("frand", rand_f32);
 #endif
 
 // vector / buffer
@@ -932,3 +1001,24 @@ void ctss_vm_init_primitives(CTSS_VM *vm) {
     CTSS_DEFNATIVE("print", print_str);
 #endif
 }
+
+#ifdef CTSS_VM_FEATURE_IO
+uint8_t ctss_vm_interpret_file(CTSS_VM *vm, char *path, uint32_t bufsize) {
+    FILE *file = fopen(path, "r");
+    if (!file) {
+        return CTSS_VM_ERR_IO;
+    }
+    char *buf = (char *)malloc(bufsize);
+    char *line = buf;
+    uint32_t read = 0;
+    while (fgets(line, bufsize - read, file) != NULL) {
+        uint32_t len = strlen(line);
+        line += len;
+        read += len;
+    }
+    CTSS_TRACE(("read file (%u bytes):\n%s", read, buf));
+    ctss_vm_interpret(vm, buf);
+    free(buf);
+    return 0;
+}
+#endif /* CTSS_VM_FEATURE_IO */

@@ -113,7 +113,8 @@ typedef enum {
     CTSS_VM_ERR_RS_OVERFLOW,
     CTSS_VM_ERR_MEM_OVERFLOW,
     CTSS_VM_ERR_TOKEN_OVERFLOW,
-    CTSS_VM_ERR_UNTERMINATED_STRING
+    CTSS_VM_ERR_UNTERMINATED_STRING,
+    CTSS_VM_ERR_IO
 } CTSS_VMError;
 
 typedef enum {
@@ -198,3 +199,9 @@ void ctss_vm_dump_tos_i32_hex(CTSS_VM *vm);
 void ctss_vm_dump_tos_f32(CTSS_VM *vm);
 
 #endif /* CTSS_VM_FEATURE_PRINT */
+
+#ifdef CTSS_VM_FEATURE_IO
+
+uint8_t ctss_vm_interpret_file(CTSS_VM *vm, char *path, uint32_t bufsize);
+
+#endif /* CTSS_VM_FEATURE_IO */

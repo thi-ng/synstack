@@ -1,6 +1,6 @@
 #include "synth.h"
 
-// ( att dec rel again sgain -- adsr-buf )
+// ( att dec rel again sgain -- env )
 CTSS_DECL_OP(init_adsr) {
     CTSS_VM_BOUNDS_CHECK_LO(dsp, ds, DS, 5);
     CTSS_VMValue *dsp = vm->dsp - 5;
@@ -18,7 +18,19 @@ CTSS_DECL_OP(init_adsr) {
     vm->dsp = dsp + 1;
 }
 
+// ( env -- )
+CTSS_DECL_OP(reset_adsr) {
+    CTSS_VM_BOUNDS_CHECK_LO(dsp, ds, DS, 1);
+    CTSS_ADSRState *env =
+        (CTSS_ADSRState *)((CTSS_SYNTH_OP(vm->dsp - 1))->state);
+    env->phase = ATTACK;
+    env->currGain = 0.0f;
+    vm->dsp--;
+}
+
+// ( env -- )
 CTSS_DECL_OP(dump_adsr) {
+    CTSS_VM_BOUNDS_CHECK_LO(dsp, ds, DS, 1);
     CTSS_SynthOp *op = CTSS_SYNTH_OP(vm->dsp - 1);
     CTSS_ADSRState *env = (CTSS_ADSRState *)(op->state);
     CTSS_PRINT(("adsr: %f %f %f %f %f gain: %f phase: %u buf: %p\n",
@@ -27,7 +39,7 @@ CTSS_DECL_OP(dump_adsr) {
                 op->buf));
 }
 
-// ( adsr mod-buf -- adsr )
+// ( env mod -- env )
 CTSS_DECL_OP(process_adsr) {
     CTSS_VM_BOUNDS_CHECK_LO(dsp, ds, DS, 2);
     CTSS_SynthOp *op = CTSS_SYNTH_OP(vm->dsp - 2);
@@ -76,6 +88,7 @@ CTSS_DECL_OP(process_adsr) {
 
 void ctss_init_adsr_ops(CTSS_VM *vm) {
     CTSS_DEFNATIVE(">adsr", init_adsr);
+    CTSS_DEFNATIVE("reset-adsr", reset_adsr);
     CTSS_DEFNATIVE(".adsr", dump_adsr);
     CTSS_DEFNATIVE("adsr", process_adsr);
 }
