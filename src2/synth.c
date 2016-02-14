@@ -56,25 +56,15 @@ int main(int argc, char **argv) {
     return 0;
 }
 
-uint32_t noteID = 0;
-double lastNote = 0;
-const uint8_t scale[] = {36, 40, 43, 45, 55, 52, 48, 60};
-const uint8_t scale2[] = {33, 31, 26, 31, 29, 33, 31, 29};
-
 static int render_synth(const void *in, void *out, unsigned long frames,
                         const PaStreamCallbackTimeInfo *timeInfo,
                         PaStreamCallbackFlags status, void *data) {
     CTSS_VM *vm = &synth.vm;
-    uint32_t update = ctss_vm_find_word(vm, "update", vm->latest);
-    if (timeInfo->currentTime - lastNote >= 0.15) {
-        CTSS_VMValue v = {.f32 = ctss_notes[scale[rand() & 7] - 12]};
-        *(vm->dsp++) = v;
-        ctss_vm_interpret(vm, "new-note");
-        lastNote = timeInfo->currentTime;
-        noteID = (noteID + 1) % 8;
-    }
+    CTSS_VMValue v = {.f32 = (float)timeInfo->currentTime};
     float *res = (float *)out;
+    uint32_t update = ctss_vm_find_word(vm, "update", vm->latest);
     for (uint32_t i = 0; i < frames / CTSS_AUDIO_BUFFER_SIZE; i++) {
+        *(vm->dsp++) = v;
         ctss_vm_execute_word(vm, update);
         CTSS_VMValue *dsp = vm->dsp - 1;
         float *buf = CTSS_BUF(dsp);

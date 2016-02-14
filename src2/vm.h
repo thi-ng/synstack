@@ -75,7 +75,7 @@
 #endif
 
 #ifndef CTSS_VM_MEM_SIZE
-#define CTSS_VM_MEM_SIZE 0x400 // (cells * sizeof(CTSS_VMValue))
+#define CTSS_VM_MEM_SIZE 0x800 // (cells * sizeof(CTSS_VMValue))
 #endif
 
 #ifndef CTSS_VM_TIB_SIZE
@@ -87,7 +87,7 @@
 #endif
 
 #ifndef CTSS_VM_RIB_SIZE
-#define CTSS_VM_RIB_SIZE 0x800
+#define CTSS_VM_RIB_SIZE 0x1000
 #endif
 
 #ifndef CTSS_VM_TOKEN_SIZE
