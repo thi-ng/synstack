@@ -41,6 +41,7 @@
 
 #define CTSS_PRINT(expr)
 #define CTSS_TRACE(expr)
+#define CTSS_TRACE_INLINE(expr)
 
 #endif /* CTSS_VM_FEATURE_PRINT */
 

@@ -5,9 +5,6 @@ char *ctss_vm_core_dict =
     ": 2dup over over ; "
     ": 2swap >r -rot r> -rot ; "
 
-    ": space 32 emit ; "
-    ": cr 10 emit ; "
-
     ": 'lit lit lit >dict ; "
     ": '>dict lit >dict >dict ; "
     ": ^immediate immediate! ; immediate! "
@@ -47,16 +44,23 @@ char *ctss_vm_core_dict =
     "  >r begin dup @ swap 1 + r> 1 - dup >r 0 == until"
     "  r> 2drop ; "
 
-    ": -see-arg swap 1 + dup @ space .h swap ; "
-    ": -see-arg? dup 4 == over 0x49 == or swap 0x4b == or ; "
+#ifdef CTSS_VM_FEATURE_PRINT
+    ": space 32 emit ; "
+    ": cr 10 emit ; "
+    ": -see-lit swap 1 + dup @ space .h swap ; "
+    ": -see-branch swap 1 + dup @ 2dup space .h + 0x28 emit .h 0x29 emit swap "
+    "; "
+    ": -see-branch? dup 0x49 == swap 0x4b == or ; "
     ": see> "
     "  read-token> find "
     "  begin "
     "    1 + dup .h 0x3a emit dup @ dup .h "
     "    dup 0x10000 < if dup 1 - word-name else \" docolon\" then print "
-    "    dup -see-arg? if -see-arg then "
+    "    dup 4 == if -see-lit then "
+    "    dup -see-branch? if -see-branch then "
     "    cr 2 == "
     "  until drop ; "
+#endif
 
     "var> *user-start* "
     "var> *user-prev* "
