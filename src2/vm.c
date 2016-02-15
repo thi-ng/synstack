@@ -290,12 +290,11 @@ char *ctss_vm_buffer_token(CTSS_VM *vm, char *token) {
 
 static void ctss_vm_execute(CTSS_VM *vm) {
     while (vm->ip && !vm->error) {
-        CTSS_TRACE(("exe: %s %u %p\n", vm->mem[vm->ip - 1].head->name, vm->ip,
+        CTSS_TRACE(("exe: %04x %s %p\n", vm->ip, vm->mem[vm->ip - 1].head->name,
                     vm->mem[vm->ip].op));
         vm->mem[vm->ip].op(vm);
         ctss_vm_next(vm);
     }
-    CTSS_TRACE(("<<<< exe done\n"));
     if (vm->error) {
         ctss_vm_dump_error(vm);
     }
@@ -309,7 +308,7 @@ static uint8_t ctss_vm_maybe_inline(CTSS_VM *vm, uint32_t addr) {
             uint32_t len = next - addr;
             CTSS_VMOpHeader *hd = vm->mem[addr].head;
             CTSS_VMOpHeader *hd2 = vm->mem[next].head;
-            CTSS_TRACE(
+            CTSS_TRACE_INLINE(
                 ("inline candidate: %s (%04x), next: %s (%04x), len: %u\n",
                  hd->name, addr, hd2->name, next, len));
             if (len < CTSS_VM_INLINE_THRESHOLD) {
@@ -318,7 +317,7 @@ static uint8_t ctss_vm_maybe_inline(CTSS_VM *vm, uint32_t addr) {
                     CTSS_VMValue word = vm->mem[addr + i];
                     if (word.i32 != ctss_vm_cfa_ret ||
                         prev == ctss_vm_cfa_lit) {
-                        CTSS_TRACE(
+                        CTSS_TRACE_INLINE(
                             ("inline: %04x: %08x\n", addr + i, word.i32));
                         ctss_vm_push_dict(vm, word);
                         prev = word.i32;
