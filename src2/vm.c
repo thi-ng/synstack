@@ -22,6 +22,7 @@
 CTSS_DECL_OP(lit);
 CTSS_DECL_OP(docolon);
 
+static uint32_t ctss_vm_cfa_ret;
 static uint32_t ctss_vm_cfa_lit;
 static CTSS_VMValue ctss_vm_errval = {.i32 = 0xdeadbeef};
 
@@ -221,6 +222,18 @@ uint32_t ctss_vm_find_word(CTSS_VM *vm, char *word, uint32_t addr) {
     return 0;
 }
 
+uint32_t ctss_vm_word_after(CTSS_VM *vm, uint32_t word) {
+    uint32_t addr = vm->latest;
+    while (addr > word) {
+        uint32_t next = (vm->mem[addr].head)->next;
+        if (next == word) {
+            return addr;
+        }
+        addr = next;
+    }
+    return 0;
+}
+
 static uint8_t ctss_vm_tib_id(CTSS_VM *vm) {
     uint8_t id = vm->tibid;
     vm->tibid = (vm->tibid + 1) % CTSS_VM_TIB_SIZE;
@@ -288,6 +301,39 @@ static void ctss_vm_execute(CTSS_VM *vm) {
     }
 }
 
+#ifdef CTSS_VM_FEATURE_INLINE
+static uint8_t ctss_vm_maybe_inline(CTSS_VM *vm, uint32_t addr) {
+    if (vm->mem[addr + 1].op == ctss_vm_op_docolon) {
+        uint32_t next = ctss_vm_word_after(vm, addr);
+        if (next) {
+            uint32_t len = next - addr;
+            CTSS_VMOpHeader *hd = vm->mem[addr].head;
+            CTSS_VMOpHeader *hd2 = vm->mem[next].head;
+            CTSS_TRACE(
+                ("inline candidate: %s (%04x), next: %s (%04x), len: %u\n",
+                 hd->name, addr, hd2->name, next, len));
+            if (len < CTSS_VM_INLINE_THRESHOLD) {
+                uint32_t prev = 0;
+                for (uint8_t i = 2; i < len - 1; i++) {
+                    CTSS_VMValue word = vm->mem[addr + i];
+                    if (word.i32 != ctss_vm_cfa_ret ||
+                        prev == ctss_vm_cfa_lit) {
+                        CTSS_TRACE(
+                            ("inline: %04x: %08x\n", addr + i, word.i32));
+                        ctss_vm_push_dict(vm, word);
+                        prev = word.i32;
+                    } else {
+                        break;
+                    }
+                }
+                return 1;
+            }
+        }
+    }
+    return 0;
+}
+#endif
+
 void ctss_vm_execute_word(CTSS_VM *vm, uint32_t addr) {
     CTSS_VMOpHeader *hd = vm->mem[addr].head;
     if (vm->mode == 0 || ctss_vm_isimmediate(hd) != 0) {
@@ -295,8 +341,15 @@ void ctss_vm_execute_word(CTSS_VM *vm, uint32_t addr) {
         vm->np = 0;
         ctss_vm_execute(vm);
     } else {
+#ifdef CTSS_VM_FEATURE_INLINE
+        if (!ctss_vm_maybe_inline(vm, addr)) {
+            CTSS_VMValue v = {.i32 = addr + 1};
+            ctss_vm_push_dict(vm, v);
+        }
+#else
         CTSS_VMValue v = {.i32 = addr + 1};
         ctss_vm_push_dict(vm, v);
+#endif
     }
 }
 
@@ -879,6 +932,7 @@ CTSS_DECL_OP(dump_tos_f32) {
 
 void ctss_vm_init_primitives(CTSS_VM *vm) {
     CTSS_DEFNATIVE("ret", ret);
+    ctss_vm_cfa_ret = ret + 1;
     CTSS_DEFNATIVE("lit", lit);
     ctss_vm_cfa_lit = lit + 1;
     CTSS_DEFNATIVE("mk-header", make_header);

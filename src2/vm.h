@@ -94,6 +94,10 @@
 #define CTSS_VM_TOKEN_SIZE 64
 #endif
 
+#ifndef CTSS_VM_INLINE_THRESHOLD
+#define CTSS_VM_INLINE_THRESHOLD 8
+#endif
+
 #define CTSS_OP(name) ctss_vm_op_##name
 #define CTSS_DECL_OP(name) static void CTSS_OP(name)(CTSS_VM * vm)
 #define CTSS_DEFNATIVE(name, id)                                               \
