@@ -1,0 +1,5 @@
+* thi.ng/synstack
+
+Project release forthcoming...
+
+Please visit [[https://hackaday.io/project/9374-stm32f4f7-synstack][project log @ Hackaday]] for interim updates. Thanks!
