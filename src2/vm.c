@@ -305,7 +305,7 @@ static uint8_t ctss_vm_maybe_inline(CTSS_VM *vm, uint32_t addr) {
     if (vm->mem[addr + 1].op == ctss_vm_op_docolon) {
         uint32_t next = ctss_vm_word_after(vm, addr);
         if (next) {
-            uint32_t len = next - addr;
+            uint32_t len = next - addr - 3;
             CTSS_VMOpHeader *hd = vm->mem[addr].head;
             CTSS_VMOpHeader *hd2 = vm->mem[next].head;
             CTSS_TRACE_INLINE(
@@ -313,7 +313,8 @@ static uint8_t ctss_vm_maybe_inline(CTSS_VM *vm, uint32_t addr) {
                  hd->name, addr, hd2->name, next, len));
             if (len < CTSS_VM_INLINE_THRESHOLD) {
                 uint32_t prev = 0;
-                for (uint8_t i = 2; i < len - 1; i++) {
+                addr += 2;
+                for (uint8_t i = 0; i < len; i++) {
                     CTSS_VMValue word = vm->mem[addr + i];
                     if (word.i32 != ctss_vm_cfa_ret ||
                         prev == ctss_vm_cfa_lit) {
@@ -513,6 +514,12 @@ CTSS_DECL_OP(lit) {
 
 CTSS_DECL_OP(ret) {
     vm->np = ctss_vm_pop_rs(vm).i32;
+}
+
+CTSS_DECL_OP(word_name) {
+    CTSS_VM_BOUNDS_CHECK_LO(dsp, ds, DS, 1)
+    CTSS_VMValue *dsp = vm->dsp - 1;
+    (*dsp).str = (vm->mem[(*dsp).i32].head)->name;
 }
 
 CTSS_DECL_OP(swap) {
@@ -767,8 +774,8 @@ CTSS_DECL_OP(read_str) {
     }
     vm->token[pos] = 0;
     CTSS_VMValue v = {.str = strdup(vm->token)};
-    printf("string lit: %s (%p), token: %s (%p)\n", v.str, v.str, vm->token,
-           vm->token);
+    CTSS_TRACE(("string lit: %s (%p), token: %s (%p)\n", v.str, v.str,
+                vm->token, vm->token));
     if (vm->mode) {
         CTSS_VMValue lit = {.i32 = ctss_vm_cfa_lit};
         ctss_vm_push_dict(vm, lit);
@@ -788,7 +795,14 @@ CTSS_DECL_OP(read_line_comment) {
 CTSS_DECL_OP(print_str) {
     CTSS_VM_BOUNDS_CHECK_LO(dsp, ds, DS, 1)
     CTSS_VMValue *dsp = vm->dsp - 1;
-    printf("%s\n", (*dsp).str);
+    printf("%s", (*dsp).str);
+    vm->dsp = dsp;
+}
+
+CTSS_DECL_OP(emit) {
+    CTSS_VM_BOUNDS_CHECK_LO(dsp, ds, DS, 1)
+    CTSS_VMValue *dsp = vm->dsp - 1;
+    putc((*dsp).i32, stdout);
     vm->dsp = dsp;
 }
 
@@ -868,7 +882,7 @@ void ctss_vm_dump_tos_i32(CTSS_VM *vm) {
 }
 
 void ctss_vm_dump_tos_i32_hex(CTSS_VM *vm) {
-    CTSS_PRINT(("0x%x ", ctss_vm_pop_ds(vm).i32));
+    CTSS_PRINT(("0x%08x ", ctss_vm_pop_ds(vm).i32));
 }
 
 void ctss_vm_dump_tos_f32(CTSS_VM *vm) {
@@ -935,6 +949,7 @@ void ctss_vm_init_primitives(CTSS_VM *vm) {
     CTSS_DEFNATIVE("lit", lit);
     ctss_vm_cfa_lit = lit + 1;
     CTSS_DEFNATIVE("mk-header", make_header);
+    CTSS_DEFNATIVE("word-name", word_name);
     CTSS_DEFNATIVE("call", call);
     CTSS_DEFNATIVE("jump", jump);
 
@@ -1052,6 +1067,7 @@ void ctss_vm_init_primitives(CTSS_VM *vm) {
     CTSS_DEFNATIVE(".h", dump_tos_i32_hex);
     CTSS_DEFNATIVE(".f", dump_tos_f32);
     CTSS_DEFNATIVE("print", print_str);
+    CTSS_DEFNATIVE("emit", emit);
 #endif
 }
 

@@ -10,4 +10,4 @@
 
 #define CTSS_VM_CUSTOM_TYPES void *synthOp;
 
-#define CTSS_VM_INLINE_THRESHOLD 8
+#define CTSS_VM_INLINE_THRESHOLD 4
