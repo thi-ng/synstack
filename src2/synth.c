@@ -2,6 +2,7 @@
 #include <portaudio.h>
 #include <math.h>
 #include "core_dict.h"
+#include "synth_dict.h"
 #include "synth.h"
 
 CTSS_Synth synth;
@@ -22,6 +23,8 @@ void ctss_init(CTSS_Synth *synth) {
     ctss_init_osc_ops(vm);
     ctss_init_adsr_ops(vm);
     ctss_init_foldback_ops(vm);
+
+    ctss_vm_interpret(vm, ctss_synth_dict);
 }
 
 void repl(CTSS_VM *vm) {
