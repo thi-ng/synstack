@@ -503,8 +503,8 @@ CTSS_DECL_OP(find) {
 }
 
 CTSS_DECL_OP(cfa) {
-    CTSS_VMValue cfa = {.i32 = ctss_vm_pop_ds(vm).i32 + 1};
-    ctss_vm_push_ds(vm, cfa);
+    CTSS_VM_BOUNDS_CHECK_LO(dsp, ds, DS, 1)
+    (*(vm->dsp - 1)).i32 = (*(vm->dsp - 1)).i32 + 1;
 }
 
 CTSS_DECL_OP(lit) {
@@ -584,11 +584,6 @@ CTSS_DECL_OP(branch0) {
         // CTSS_OP(branch)(vm);
         vm->np += vm->mem[vm->np].i32;
     }
-}
-
-CTSS_DECL_OP(call) {
-    CTSS_VM_BOUNDS_CHECK_LO(dsp, ds, DS, 1)
-    vm->ip = (*--vm->dsp).i32; // FIXME must not call next() for this
 }
 
 CTSS_DECL_OP(jump) {
@@ -950,7 +945,6 @@ void ctss_vm_init_primitives(CTSS_VM *vm) {
     ctss_vm_cfa_lit = lit + 1;
     CTSS_DEFNATIVE("mk-header", make_header);
     CTSS_DEFNATIVE("word-name", word_name);
-    CTSS_DEFNATIVE("call", call);
     CTSS_DEFNATIVE("jump", jump);
 
     // stack
@@ -964,10 +958,10 @@ void ctss_vm_init_primitives(CTSS_VM *vm) {
     CTSS_DEFNATIVE("r>", rpop);
 
     // dict
-    CTSS_DEFNATIVE("here", here);
+    CTSS_DEFNATIVE("here@", here);
     CTSS_DEFNATIVE("here!", set_here);
     CTSS_DEFNATIVE(">dict", push_dict);
-    CTSS_DEFNATIVE("latest", latest);
+    CTSS_DEFNATIVE("latest@", latest);
     CTSS_DEFNATIVE("latest!", set_latest);
     CTSS_DEFNATIVE("find", find);
     CTSS_DEFNATIVE(">cfa", cfa);
