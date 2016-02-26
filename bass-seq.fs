@@ -1,5 +1,5 @@
 \ define scale for sequencer
-C2 E2 G2 A2 G3 E3 C3 C4 E4 9
+C1 C1 C1 C1 C2 C2 C2 C2 C4 9
 dup allot dup var> seq ! swap ds>dict!
 
 : rand-seq-note ( -- freq ) 0 9 rand seq @ + @ 2.0f f* ;
@@ -16,7 +16,7 @@ buf var> pitch2 !
 
 \ LFO2 = 82.4Hz (MIDI note E2)
 \ used for frequence modulation, amplitude reset for each note via `set-pitch` word
-E2 hz buf dup var> lfo2pitch ! b! drop
+C2 hz buf dup var> lfo2pitch ! b! drop
 buf var> lfo2amp !
 
 \ define actual oscillators, env & fx vars
@@ -24,8 +24,8 @@ buf var> lfo2amp !
 0.0f >osc var> lfo2 !
 0.0f >osc var> osc1 !
 0.0f >osc var> osc2 !
-0.005f 0.1f 0.5f 0.75f 0.25f >adsr var> env !
-0.35f 2.0f >foldback var> fb !
+0.005f 0.1f 0.75f 0.8f 0.25f >adsr var> env !
+0.33f 2.5f >foldback var> fb !
 0.0f var> last-note !
 
 : vfill! ( freq var -- ) @ b! drop ;
@@ -36,7 +36,7 @@ buf var> lfo2amp !
 : set-pitch ( freq -- )
     hz dup dup pitch vfill!
     1.01f f* pitch2 vfill!
-    0.5f f* lfo2amp vfill! ;
+    0.9f f* lfo2amp vfill! ;
 
 \ trigger new note: sets pitch and resets envolope
 : new-note ( freq -- ) set-pitch env @ reset-adsr ;
@@ -48,7 +48,7 @@ buf var> lfo2amp !
     dup last-note @ f- 0.15f f>=
     if
         last-note !
-        0.0f 1.0f frand 0.6f f<
+        0.0f 1.0f frand 0.8f f<
         if rand-seq-note new-note then
     else
         drop
