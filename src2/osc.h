@@ -1,7 +1,7 @@
 #pragma once
 
-#include "vm.h"
 #include "synth_conf.h"
+#include "vm.h"
 
 typedef struct { float phase; } CTSS_OscState;
 

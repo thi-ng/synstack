@@ -1,11 +1,11 @@
 #pragma once
 
+#include <math.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <math.h>
-#include "vm.h"
 #include "synth_conf.h"
+#include "vm.h"
 
 #define PI 3.1415926535897932384626433832795029f
 #define TAU (2.0f * PI)
@@ -20,16 +20,16 @@
 
 #define TIME_TO_FS_RATE(t) (1.0f / (CTSS_SAMPLE_RATE * (t)))
 
-#define TRUNC_PHASE(phase)                                                     \
-    if (phase >= TAU) {                                                        \
-        phase -= TAU;                                                          \
-    } else if (phase < 0.0) {                                                  \
-        phase += TAU;                                                          \
-    }
+#define TRUNC_PHASE(phase)  \
+  if (phase >= TAU) {       \
+    phase -= TAU;           \
+  } else if (phase < 0.0) { \
+    phase += TAU;           \
+  }
 
 typedef struct {
-    float buf[CTSS_AUDIO_BUFFER_SIZE];
-    void *state;
+  float buf[CTSS_AUDIO_BUFFER_SIZE];
+  void *state;
 } CTSS_SynthOp;
 
 typedef struct { CTSS_VM vm; } CTSS_Synth;
@@ -37,7 +37,7 @@ typedef struct { CTSS_VM vm; } CTSS_Synth;
 #define CTSS_SYNTH_OP(ptr) (CTSS_SynthOp *)(*(ptr)).synthOp
 #define CTSS_BUF(ptr) (CTSS_SYNTH_OP(ptr))->buf
 
-#include "buffer.h"
-#include "osc.h"
 #include "adsr.h"
+#include "buffer.h"
 #include "foldback.h"
+#include "osc.h"
