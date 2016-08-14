@@ -1,5 +1,137 @@
 * thi.ng/synstack
+** Contents                                                        :toc_3_gh:
+ - [[#thingsynstack][thi.ng/synstack]]
+     - [[#overview][Overview]]
+     - [[#build-instructions][Build instructions]]
+     - [[#examples][Examples]]
+         - [[#forth-repl][Forth REPL]]
+     - [[#contributors][Contributors]]
+     - [[#license][License]]
 
-Project release forthcoming...
+** Overview
 
-Please visit [[https://hackaday.io/project/9374-stm32f4f7-synstack][project log @ Hackaday]] for interim updates. Thanks!
+[[./assets/thing-synstack.jpg]]
+
+Full project release forthcoming...
+
+Please visit [[https://hackaday.io/project/9374-stm32f4f7-synstack][project log @ Hackaday]] for interim updates, including a
+PDF with more project details. Thanks!
+
+This repo currently contains two different experimentatal
+implementations of a modular soft synth, written in C11 and originally
+developed for the STM32F4/F7 platform. However, for practical reasons
+(repo size, easier debugging and dev workflow), both versions
+currently included here were prepared without STM specifics, have been
+tested on OSX & Linux and [[#examples][include several examples]].
+
+The directories contain:
+
+- =src= - an earlier (2nd or 3rd) iteration of the CTSS synth engine,
+  using block based operators & node DAG
+- =examples= - examples for this version of the synth (using
+  Portaudio, see below)
+
+Forth VM based synth:
+
+- =src_vm= - actual Forth stack VM, REPL, core Forth dictionary & basic
+  synth operators (still need to port more from =src=)
+- =examples_vm= - Forth examples (see below)
+
+** Build instructions
+
+Requirements:
+
+- [[https://premake.github.io/][Premake5]]
+- [[http://www.gnu.org/software/make/][GNU Make]]
+- GCC / Clang (w/ C11 support)
+
+The library itself has no 3rd party dependencies. Some of the examples
+however use these additional libraries:
+
+- [[https://github.com/thi-ng/ct-head][ct-head]] (included as submodule)
+- [[http://portaudio.com][Portaudio]] (on OSX can be installed via =brew=)
+- libncurses (part of OSX & Linux)
+
+#+BEGIN_SRC shell
+git clone --recursive https://github.com/thi-ng/synstack
+
+cd synstack
+
+premake5 gmake
+
+make -f ctss_old.make config=release_sse
+
+make -f ctss_vm.make config=release_sse
+#+END_SRC
+
+** Examples
+
+Use the above build instructions to build all components & examples.
+Almost all demos in =examples= are using the same interactive controls:
+
+| *Key* | *Description*      |
+|-------+--------------------|
+| =-=   | dec delay feedback |
+| =+=   | inc delay feedback |
+| =[=   | pitch -2 semitones |
+| =]=   | pitch +2 semitones |
+| =;=   | pitch -12          |
+| ='=   | pitch +12          |
+| =q=   | quit               |
+
+The two exceptions are:
+
+- =synth_keys= - play a new note with each keypress (fixed sequence, =q= to quit)
+- =synth_render= - non-interactive demo, creates .wav file
+
+#+BEGIN_SRC shell
+  # if you followed above build instructions, the demos can be launched like:
+  bin/release/synth_spiral
+#+END_SRC
+
+*** Forth REPL
+
+To launch the REPL with input file (one running hit =Return= to quit):
+
+#+BEGIN_SRC shell
+  bin/release/repl examples_vm/bass-seq.fs
+#+END_SRC
+
+To launch the Forth REPL for interactive input:
+
+#+BEGIN_SRC shell
+  bin/release/repl
+  # there'll be alot of output initially, but no visible input prompt...
+  # still you can try (hit return after each line)...
+
+  # evaluate expression
+  1 2 + .
+
+  # define new word (here to calculate a * b + c)
+  : madd -rot * + ;
+  3 5 10 .
+  # 25
+
+  # display data stack contents
+  .s
+
+  # display VM stats
+  .vm
+
+  # display list of all words currently defined
+  .words
+
+  # display hexdump of VM memory
+  .mem
+#+END_SRC
+
+Also check out: [[http://soundcloud.com/forthcharlie/sets/stm32f4][Demo set with 40+ tracks on Soundcloud]]!
+
+** Contributors
+
+| *Name*          | *Role*                          | *Website* |
+| [[mailto:k@thi.ng][Karsten Schmidt]] | initiator & principal developer | [[http://thi.ng][thi.ng]]    |
+
+** License
+
+This project is open source and licensed under the [[http://www.apache.org/licenses/LICENSE-2.0][Apache Software License 2.0]].
