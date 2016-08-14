@@ -1,4 +1,7 @@
 * thi.ng/synstack
+
+Softsynth experiments for tiny & not-so-tiny devices...
+
 ** Contents                                                        :toc_3_gh:
  - [[#thingsynstack][thi.ng/synstack]]
      - [[#overview][Overview]]
@@ -11,6 +14,8 @@
 ** Overview
 
 [[./assets/thing-synstack.jpg]]
+
+Check out: [[http://soundcloud.com/forthcharlie/sets/stm32f4][Demo set with 40+ tracks on Soundcloud]]!
 
 Full project release forthcoming...
 
@@ -31,10 +36,11 @@ The directories contain:
 - =examples= - examples for this version of the synth (using
   Portaudio, see below)
 
-Forth VM based synth:
+Forth-like VM based synth (not embracing ANS Forth standard here):
 
-- =src_vm= - actual Forth stack VM, REPL, core Forth dictionary & basic
-  synth operators (still need to port more from =src=)
+- =src_vm= - actual stack VM, interpreter & compiler w/ basic
+  inlining, REPL, core Forth dictionary & basic synth operators (still
+  need to port more from =src=)
 - =examples_vm= - Forth examples (see below)
 
 ** Build instructions
@@ -124,8 +130,6 @@ To launch the Forth REPL for interactive input:
   # display hexdump of VM memory
   .mem
 #+END_SRC
-
-Also check out: [[http://soundcloud.com/forthcharlie/sets/stm32f4][Demo set with 40+ tracks on Soundcloud]]!
 
 ** Contributors
 
