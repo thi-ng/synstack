@@ -5,8 +5,11 @@ Softsynth experiments for tiny & not-so-tiny devices...
 ** Contents                                                        :toc_3_gh:
  - [[#thingsynstack][thi.ng/synstack]]
      - [[#overview][Overview]]
+         - [[#node-dag-synth-engine][Node DAG synth engine]]
+         - [[#forth-like-vm-based-synth][Forth-like VM based synth]]
      - [[#build-instructions][Build instructions]]
      - [[#examples][Examples]]
+         - [[#interactive-examples][Interactive examples]]
          - [[#forth-repl][Forth REPL]]
      - [[#contributors][Contributors]]
      - [[#license][License]]
@@ -29,14 +32,19 @@ developed for the STM32F4/F7 platform. However, for practical reasons
 currently included here were prepared without STM specifics, have been
 tested on OSX & Linux and [[#examples][include several examples]].
 
-The directories contain:
+The sub-directories contain:
+
+*** Node DAG synth engine
 
 - =src= - an earlier (2nd or 3rd) iteration of the CTSS synth engine,
-  using block based operators & node DAG
+  using block based operators & node DAG:
+- ~10 oscillators (incl. formant & karplus-strong)
 - =examples= - examples for this version of the synth (using
   Portaudio, see below)
 
-Forth-like VM based synth (not embracing ANS Forth standard here):
+*** Forth-like VM based synth
+
+(not embracing ANS Forth standard here):
 
 - =src_vm= - actual stack VM, interpreter & compiler w/ basic
   inlining, REPL, core Forth dictionary & basic synth operators (still
@@ -71,6 +79,7 @@ make -f ctss_vm.make config=release_sse
 #+END_SRC
 
 ** Examples
+*** Interactive examples
 
 Use the above build instructions to build all components & examples.
 Almost all demos in =examples= are using the same interactive controls:
@@ -97,7 +106,8 @@ The two exceptions are:
 
 *** Forth REPL
 
-To launch the REPL with input file (one running hit =Return= to quit):
+To launch the REPL with input file (once running, hit =Return= to quit).
+Also see [[./examples_vm/bass-seq.fs][example source code]].
 
 #+BEGIN_SRC shell
   bin/release/repl examples_vm/bass-seq.fs
