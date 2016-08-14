@@ -1,4 +1,4 @@
-workspace "synstack"
+workspace "ctss_old"
 configurations { "debug", "release" }
 platforms { "sse", "no_sse" }
 language "C"
@@ -16,7 +16,7 @@ defines { "DEBUG", "CT_FEATURE_CHECKS", "CT_FEATURE_CHECK_MEM" }
 
 filter "configurations:release"
 defines { "NDEBUG", "CT_FEATURE_LOG" }
-optimize "Size"
+optimize "Speed"
 
 ----- test
 --[[
@@ -135,3 +135,35 @@ links "lib"
 dependson "lib"
 flags { "LinkTimeOptimization" }
 linkoptions { "-lncurses", "-lportaudio" }
+
+----------------------------------------
+----- Forth VM -----
+----------------------------------------
+
+workspace "ctss_vm"
+configurations { "debug", "release" }
+platforms { "sse", "no_sse" }
+language "C"
+includedirs { "ext", "src_vm" }
+targetdir "bin/%{cfg.buildcfg}"
+flags { "Symbols", "C++11" }
+linkoptions "-lm"
+
+filter "platforms:sse"
+defines { "CT_FEATURE_SSE" }
+buildoptions { "-msse", "-msse2", "-msse3", "-msse4.1" }
+
+filter "configurations:debug"
+defines { "DEBUG", "CT_FEATURE_CHECKS", "CT_FEATURE_CHECK_MEM" }
+
+filter "configurations:release"
+defines { "NDEBUG", "CT_FEATURE_LOG" }
+optimize "Size"
+
+----- Forth REPL -----
+
+project "repl"
+kind "ConsoleApp"
+files { "src_vm/**.c" }
+flags { "LinkTimeOptimization" }
+linkoptions { "-lportaudio" }
