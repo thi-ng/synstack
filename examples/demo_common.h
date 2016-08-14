@@ -1,15 +1,14 @@
 #pragma once
 
-#include <string.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <time.h>
 #include <errno.h>
 #include <ncurses.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
 
 #include <portaudio.h>
 
-#include "synth.h"
 #include "adsr.h"
 #include "biquad.h"
 #include "delay.h"
@@ -20,6 +19,7 @@
 #include "osc.h"
 #include "panning.h"
 #include "pluck.h"
+#include "synth.h"
 
 typedef PaStreamCallback DemoRenderFn;
 typedef struct AppState AppState;
@@ -27,15 +27,15 @@ typedef struct AppState AppState;
 typedef void (*DemoKeyHandler)(AppState *app, char ch);
 
 struct AppState {
-    CTSS_Synth synth;
-    DemoRenderFn *callback;
-    DemoKeyHandler handler;
-    uint8_t isNewNote;
-    uint8_t noteID;
-    uint8_t voiceID;
-    uint8_t channels;
-    int8_t pitch;
-    float time;
+  CTSS_Synth synth;
+  DemoRenderFn *callback;
+  DemoKeyHandler handler;
+  uint8_t isNewNote;
+  uint8_t noteID;
+  uint8_t voiceID;
+  uint8_t channels;
+  int8_t pitch;
+  float time;
 };
 
 void init_voice_buffers(AppState *app);
