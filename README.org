@@ -117,9 +117,9 @@ The two exceptions are:
 
 *** Forth REPL
 
-To launch the VM with input file. Also see [[./examples_vm/bass-seq.fs][example source code]]. In
-this mode the VM goes into playback mode and is non-interactive (hit
-=Return= to quit).
+Use the command below to launch the VM with input file. Also see
+[[./examples_vm/bass-seq.fs][example source code]]. In this mode the VM goes straight into playback
+mode and is non-interactive (hit =Return= to quit).
 
 #+BEGIN_SRC shell
   bin/release/repl examples_vm/bass-seq.fs
@@ -131,9 +131,9 @@ To launch the Forth REPL in interactive mode:
   rlwrap bin/release/repl
 #+END_SRC
 
-There'll be alot of output initially (inlining statistics by the
+There'll be alot of output initially (inlining statistics by the Forth
 compiler), but no visible input prompt. Try some of the following (hit
-return after each line, comment lines are prefixed with '\')...
+return after each line, comment lines are prefixed with '\\')...
 
 #+BEGIN_SRC forth
   \ evaluate expression
@@ -176,7 +176,7 @@ return after each line, comment lines are prefixed with '\')...
   C3 E3 G3 A3 4 dup allot dup var> chord ! swap ds>dict!
 
   \ define word to randomly choose note from chord
-  : rand-chord-note ( -- freq ) 0 4 rand seq @ + @ ;
+  : rand-chord-note ( -- freq ) 0 4 rand chord @ + @ ;
 
   \ call several times
   rand-chord-note .f
@@ -201,6 +201,8 @@ return after each line, comment lines are prefixed with '\')...
   .vm
 
   \ display list & addresses of all words currently defined
+  \ also see /src_vm/core_dict.h how some control structures
+  \ are defined in forth itself
   .words
 
   \ display hexdump of VM memory
