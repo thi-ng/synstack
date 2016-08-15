@@ -183,6 +183,17 @@ return after each line, comment lines are prefixed with '\')...
   rand-chord-note .f
   rand-chord-note .f
 
+  \ disassemble word
+  see> rand-chord-note
+  \ 0x000004da :0x0301a88a docolon
+  \ 0x000004db :0x00000004 lit 0x00000000 
+  \ 0x000004dd :0x00000004 lit 0x00000004 
+  \ 0x000004df :0x00000081 rand
+  \ 0x000004e0 :0x00000004 lit 0x000004d3 
+  \ 0x000004e2 :0x0000002a @
+  \ 0x000004e3 :0x0000004b + 0x0000002a (0x0000050e )
+  \ 0x000004e5 :0x00000002 ret
+
   \ display data stack contents with .s
   1 2 3 .s
 
