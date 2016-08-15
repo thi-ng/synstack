@@ -1,6 +1,6 @@
 * thi.ng/synstack
 
-Softsynth experiments for tiny & not-so-tiny devices...
+Softsynth engine for tiny & not-so-tiny devices...
 
 ** Contents                                                        :toc_3_gh:
  - [[#thingsynstack][thi.ng/synstack]]
@@ -25,20 +25,29 @@ Full project release forthcoming...
 Please visit [[https://hackaday.io/project/9374-stm32f4f7-synstack][project log @ Hackaday]] for interim updates, including a
 PDF with more project details. Thanks!
 
-This repo currently contains two different experimentatal
-implementations of a modular soft synth, written in C11 and originally
-developed for the STM32F4/F7 platform. However, for practical reasons
-(repo size, easier debugging and dev workflow), both versions
-currently included here were prepared without STM specifics, have been
-tested on OSX & Linux and [[#examples][include several examples]].
+This repo currently contains two different experimental & easily
+extensible implementations of a modular soft synth engine, both
+written in portable C11 and originally developed for the STM32F4/F7
+platform. However, for practical reasons (repo size, easier debugging
+and dev workflow), both versions currently included here were prepared
+without STM specifics, have been tested on OSX & Linux and [[#examples][include
+several examples]]. Demo file size after stripping is between ~22-40KB
+(for 32bit, bit larger for 64bit).
 
 The sub-directories contain:
 
 *** Node DAG synth engine
 
 - =src= - an earlier (2nd or 3rd) iteration of the CTSS synth engine,
-  using block based operators & node DAG:
-- ~10 oscillators (incl. formant & karplus-strong)
+  using block based operators & node DAG (directed acyclic graph):
+  - 10 oscillators (incl. formant & karplus-strong, polyBlep antialiasing)
+  - flexibile LFO setup (global LFO & arbitrary per voice)
+  - filters (biquad, IIR LP/HP/BP, formant)
+  - ADSR
+  - foldback distortion
+  - buffer ops (sum, product, product sum)
+  - mono / stereo delay lines w/ feedback
+  - mono / stereo mixdowns (int16 & float)
 - =examples= - examples for this version of the synth (using
   Portaudio, see below)
 
@@ -82,7 +91,9 @@ make -f ctss_vm.make config=release_sse
 *** Interactive examples
 
 Use the above build instructions to build all components & examples.
-Almost all demos in =examples= are using the same interactive controls:
+Almost all demos in =examples= implement a simple randomized sequence
+playback (some with multiple voices) and are using the same
+interactive controls:
 
 | *Key* | *Description*      |
 |-------+--------------------|
@@ -91,13 +102,13 @@ Almost all demos in =examples= are using the same interactive controls:
 | =[=   | pitch -2 semitones |
 | =]=   | pitch +2 semitones |
 | =;=   | pitch -12          |
-| ='=   | pitch +12          |
+| '     | pitch +12          |
 | =q=   | quit               |
 
 The two exceptions are:
 
-- =synth_keys= - play a new note with each keypress (fixed sequence, =q= to quit)
-- =synth_render= - non-interactive demo, creates .wav file
+- [[./examples/synth_keys.c][synth_keys]] - play a new note with each keypress (fixed sequence, =q= to quit)
+- [[./examples/synth_render.c][synth_render]] - non-interactive demo, creates /sound.wav file (runtime ~20secs)
 
 #+BEGIN_SRC shell
   # if you followed above build instructions, the demos can be launched like:
@@ -106,38 +117,82 @@ The two exceptions are:
 
 *** Forth REPL
 
-To launch the REPL with input file (once running, hit =Return= to quit).
-Also see [[./examples_vm/bass-seq.fs][example source code]].
+To launch the VM with input file. Also see [[./examples_vm/bass-seq.fs][example source code]]. In
+this mode the VM goes into playback mode and is non-interactive (hit
+=Return= to quit).
 
 #+BEGIN_SRC shell
   bin/release/repl examples_vm/bass-seq.fs
 #+END_SRC
 
-To launch the Forth REPL for interactive input:
+To launch the Forth REPL in interactive mode:
 
 #+BEGIN_SRC shell
-  bin/release/repl
-  # there'll be alot of output initially, but no visible input prompt...
-  # still you can try (hit return after each line)...
+  rlwrap bin/release/repl
+#+END_SRC
 
-  # evaluate expression
+There'll be alot of output initially (inlining statistics by the
+compiler), but no visible input prompt. Try some of the following (hit
+return after each line, comment lines are prefixed with '\')...
+
+#+BEGIN_SRC forth
+  \ evaluate expression
+  \ forth uses RPN, the '.' word pops & prints the top stack item
+  \ forth is a hybrid between interpreted & compiled execution
   1 2 + .
+  \ 3
 
-  # define new word (here to calculate a * b + c)
-  : madd -rot * + ;
-  3 5 10 .
-  # 25
+  \ define new word (here to calculate a * b + c)
+  \ the (...) form is a stack effect comment:
+  \ here it means the word consumes 3 items from the stack
+  \ and after execution a new item (result) is on the stack
+  : madd ( a b c -- x ) -rot * + ;
+  3 5 10 madd .
+  \ 25
 
-  # display data stack contents
-  .s
+  \ the VM differentiates between int & float based math
+  \ float ops are prefixed with 'f'
+  : maddf -rot f* f+ ;
+  3.f 5.f 10.f maddf .f
+  \ 25.0
 
-  # display VM stats
+  \ store values in "variables" (labelled addresses)
+  23 var> foo !
+  \ get var value
+  foo @ .
+  \ 23
+
+  \ by default the VM includes the dictionary of synth related words
+  \ (defined in /src_vm/synth_dict & various C files in /src_vm)
+  \ for example note names map to their frequency
+  A4 .f
+  \ 440.000000
+
+  \ convert frequency to ratio of sample rate
+  A4 hz .f
+  \ 0.062689
+
+  \ allocate memory for note/chord lookup table
+  C3 E3 G3 A3 4 dup allot dup var> chord ! swap ds>dict!
+
+  \ define word to randomly choose note from chord
+  : rand-chord-note ( -- freq ) 0 4 rand seq @ + @ ;
+
+  \ call several times
+  rand-chord-note .f
+  rand-chord-note .f
+  rand-chord-note .f
+
+  \ display data stack contents with .s
+  1 2 3 .s
+
+  \ display VM stats
   .vm
 
-  # display list of all words currently defined
+  \ display list & addresses of all words currently defined
   .words
 
-  # display hexdump of VM memory
+  \ display hexdump of VM memory
   .mem
 #+END_SRC
 
