@@ -17,7 +17,7 @@ void ctss_free_node(CTSS_DSPNode *node) {
   free(node);
 }
 
-void ctss_init(CTSS_Synth *synth, uint8_t numStacks) {
+void ctss_init(CTSS_Synth *synth, size_t numStacks) {
   memset((void *)ctss_zero, 0, sizeof(float) * AUDIO_BUFFER_SIZE);
   synth->stacks = (CTSS_DSPStack *)calloc(numStacks, sizeof(CTSS_DSPStack));
   synth->stackOutputs = (float **)calloc(numStacks, sizeof(float *));
@@ -39,7 +39,7 @@ void ctss_init_stack(CTSS_DSPStack *stack) {
 
 void ctss_build_stack(CTSS_DSPStack *stack,
                       CTSS_DSPNode **nodes,
-                      uint8_t length) {
+                      size_t length) {
   while (length--) {
     ctss_stack_append(stack, *nodes++);
   }
@@ -51,7 +51,7 @@ void ctss_activate_stack(CTSS_DSPStack *stack) {
 }
 
 void ctss_collect_stacks(CTSS_Synth *synth) {
-  for (uint8_t i = 0; i < synth->numStacks; i++) {
+  for (size_t i = 0; i < synth->numStacks; i++) {
     CTSS_DSPStack *s       = &synth->stacks[i];
     synth->stackOutputs[i] = ctss_stack_last_node(s)->buf;
     s->flags               = 0;
@@ -70,9 +70,9 @@ fail:
 
 void ctss_update_mix_mono_i16(CTSS_Synth *synth,
                               CTSS_Mixdown_I16 mixdown,
-                              uint32_t frames,
+                              size_t frames,
                               int16_t *out) {
-  for (uint32_t i = 0, num = frames / AUDIO_BUFFER_SIZE; i < num; i++) {
+  for (size_t i = 0, num = frames / AUDIO_BUFFER_SIZE; i < num; i++) {
     ctss_update(synth);
     mixdown(synth->stackOutputs, &out[i * AUDIO_BUFFER_SIZE], 0,
             AUDIO_BUFFER_SIZE, synth->numStacks, 1);
@@ -81,9 +81,9 @@ void ctss_update_mix_mono_i16(CTSS_Synth *synth,
 
 void ctss_update_mix_stereo_i16(CTSS_Synth *synth,
                                 CTSS_Mixdown_I16 mixdown,
-                                uint32_t frames,
+                                size_t frames,
                                 int16_t *out) {
-  for (uint32_t i = 0, num = frames / AUDIO_BUFFER_SIZE; i < num; i++) {
+  for (size_t i = 0, num = frames / AUDIO_BUFFER_SIZE; i < num; i++) {
     ctss_update(synth);
     mixdown(synth->stackOutputs, &out[i * AUDIO_BUFFER_SIZE2], 0,
             AUDIO_BUFFER_SIZE, synth->numStacks, 2);
@@ -94,9 +94,9 @@ void ctss_update_mix_stereo_i16(CTSS_Synth *synth,
 
 void ctss_update_mix_mono_f32(CTSS_Synth *synth,
                               CTSS_Mixdown_F32 mixdown,
-                              uint32_t frames,
+                              size_t frames,
                               float *out) {
-  for (uint32_t i = 0, num = frames / AUDIO_BUFFER_SIZE; i < num; i++) {
+  for (size_t i = 0, num = frames / AUDIO_BUFFER_SIZE; i < num; i++) {
     ctss_update(synth);
     mixdown(synth->stackOutputs, &out[i * AUDIO_BUFFER_SIZE], 0,
             AUDIO_BUFFER_SIZE, synth->numStacks, 1);
@@ -105,9 +105,9 @@ void ctss_update_mix_mono_f32(CTSS_Synth *synth,
 
 void ctss_update_mix_stereo_f32(CTSS_Synth *synth,
                                 CTSS_Mixdown_F32 mixdown,
-                                uint32_t frames,
+                                size_t frames,
                                 float *out) {
-  for (uint32_t i = 0, num = frames / AUDIO_BUFFER_SIZE; i < num; i++) {
+  for (size_t i = 0, num = frames / AUDIO_BUFFER_SIZE; i < num; i++) {
     ctss_update(synth);
     mixdown(synth->stackOutputs, &out[i * AUDIO_BUFFER_SIZE2], 0,
             AUDIO_BUFFER_SIZE, synth->numStacks, 2);
@@ -116,13 +116,13 @@ void ctss_update_mix_stereo_f32(CTSS_Synth *synth,
   }
 }
 
-CTSS_DSPNode *ctss_node(char *id, uint8_t channels) {
+CTSS_DSPNode *ctss_node(char *id, size_t channels) {
   CTSS_DSPNode *node = (CTSS_DSPNode *)calloc(1, sizeof(CTSS_DSPNode));
   ctss_init_node(node, id, channels);
   return node;
 }
 
-void ctss_init_node(CTSS_DSPNode *node, char *id, uint8_t channels) {
+void ctss_init_node(CTSS_DSPNode *node, char *id, size_t channels) {
   if (node->buf != NULL) {
     free(node->buf);
   }
@@ -164,7 +164,7 @@ void ctss_stack_append(CTSS_DSPStack *stack, CTSS_DSPNode *node) {
 void ctss_process_stack(CTSS_DSPStack *stack, CTSS_Synth *synth) {
   if (stack->flags & STACK_ACTIVE) {
     CTSS_DSPNode *node = stack->startNode;
-    uint8_t flags      = 0;
+    size_t flags       = 0;
     while (1) {
       if (node->flags & NODE_ACTIVE) {
         flags |= node->handler(node, stack, synth);
@@ -197,11 +197,11 @@ void ctss_trace_stack(CTSS_DSPStack *stack) {
 }
 
 void ctss_update(CTSS_Synth *synth) {
-  for (uint8_t i = 0; i < synth->numLFO; i++) {
+  for (size_t i = 0; i < synth->numLFO; i++) {
     synth->lfo[i]->handler(synth->lfo[i], NULL, synth);
   }
   CTSS_DSPStack *s = synth->stacks;
-  for (uint8_t i = synth->numStacks; i > 0; i--, s++) {
+  for (size_t i = synth->numStacks; i > 0; i--, s++) {
     if (s->flags & STACK_ACTIVE) {
       ctss_process_stack(s, synth);
     }
@@ -210,13 +210,13 @@ void ctss_update(CTSS_Synth *synth) {
 
 void ctss_mixdown_i16(float **sources,
                       int16_t *out,
-                      uint32_t offset,
-                      uint32_t len,
-                      const uint8_t num,
-                      const uint8_t stride) {
+                      size_t offset,
+                      size_t len,
+                      const size_t num,
+                      const size_t stride) {
   while (len--) {
-    float sum  = 0;
-    uint32_t n = num;
+    float sum = 0;
+    size_t n  = num;
     while (n--) {
       sum += *(sources[n] + offset);
     }
@@ -228,10 +228,10 @@ void ctss_mixdown_i16(float **sources,
 
 void ctss_mixdown_i16_3(float **sources,
                         int16_t *out,
-                        uint32_t offset,
-                        uint32_t len,
-                        const uint8_t num,
-                        const uint8_t stride) {
+                        size_t offset,
+                        size_t len,
+                        const size_t num,
+                        const size_t stride) {
   while (len--) {
     float sum = *(sources[0] + offset);
     sum += *(sources[1] + offset);
@@ -244,10 +244,10 @@ void ctss_mixdown_i16_3(float **sources,
 
 void ctss_mixdown_i16_4(float **sources,
                         int16_t *out,
-                        uint32_t offset,
-                        uint32_t len,
-                        const uint8_t num,
-                        const uint8_t stride) {
+                        size_t offset,
+                        size_t len,
+                        const size_t num,
+                        const size_t stride) {
   while (len--) {
     float sum = *(sources[0] + offset);
     sum += *(sources[1] + offset);
@@ -261,10 +261,10 @@ void ctss_mixdown_i16_4(float **sources,
 
 void ctss_mixdown_i16_5(float **sources,
                         int16_t *out,
-                        uint32_t offset,
-                        uint32_t len,
-                        const uint8_t num,
-                        const uint8_t stride) {
+                        size_t offset,
+                        size_t len,
+                        const size_t num,
+                        const size_t stride) {
   while (len--) {
     float sum = *(sources[0] + offset);
     sum += *(sources[1] + offset);
@@ -279,10 +279,10 @@ void ctss_mixdown_i16_5(float **sources,
 
 void ctss_mixdown_i16_6(float **sources,
                         int16_t *out,
-                        uint32_t offset,
-                        uint32_t len,
-                        const uint8_t num,
-                        const uint8_t stride) {
+                        size_t offset,
+                        size_t len,
+                        const size_t num,
+                        const size_t stride) {
   while (len--) {
     float sum = *(sources[0] + offset);
     sum += *(sources[1] + offset);
@@ -298,13 +298,13 @@ void ctss_mixdown_i16_6(float **sources,
 
 void ctss_mixdown_f32(float **sources,
                       float *out,
-                      uint32_t offset,
-                      uint32_t len,
-                      const uint8_t num,
-                      const uint8_t stride) {
+                      size_t offset,
+                      size_t len,
+                      const size_t num,
+                      const size_t stride) {
   while (len--) {
-    float sum  = 0;
-    uint32_t n = num;
+    float sum = 0;
+    size_t n  = num;
     while (n--) {
       sum += *(sources[n] + offset);
     }
@@ -321,10 +321,10 @@ void ctss_mixdown_f32(float **sources,
 
 void ctss_mixdown_f32_3(float **sources,
                         float *out,
-                        uint32_t offset,
-                        uint32_t len,
-                        const uint8_t num,
-                        const uint8_t stride) {
+                        size_t offset,
+                        size_t len,
+                        const size_t num,
+                        const size_t stride) {
   while (len--) {
     float sum = *(sources[0] + offset);
     sum += *(sources[1] + offset);
@@ -342,10 +342,10 @@ void ctss_mixdown_f32_3(float **sources,
 
 void ctss_mixdown_f32_4(float **sources,
                         float *out,
-                        uint32_t offset,
-                        uint32_t len,
-                        const uint8_t num,
-                        const uint8_t stride) {
+                        size_t offset,
+                        size_t len,
+                        const size_t num,
+                        const size_t stride) {
   while (len--) {
     float sum = *(sources[0] + offset);
     sum += *(sources[1] + offset);
@@ -364,10 +364,10 @@ void ctss_mixdown_f32_4(float **sources,
 
 void ctss_mixdown_f32_5(float **sources,
                         float *out,
-                        uint32_t offset,
-                        uint32_t len,
-                        const uint8_t num,
-                        const uint8_t stride) {
+                        size_t offset,
+                        size_t len,
+                        const size_t num,
+                        const size_t stride) {
   while (len--) {
     float sum = *(sources[0] + offset);
     sum += *(sources[1] + offset);
@@ -387,10 +387,10 @@ void ctss_mixdown_f32_5(float **sources,
 
 void ctss_mixdown_f32_6(float **sources,
                         float *out,
-                        uint32_t offset,
-                        uint32_t len,
-                        const uint8_t num,
-                        const uint8_t stride) {
+                        size_t offset,
+                        size_t len,
+                        const size_t num,
+                        const size_t stride) {
   while (len--) {
     float sum = *(sources[0] + offset);
     sum += *(sources[1] + offset);

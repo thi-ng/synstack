@@ -57,17 +57,17 @@ typedef uint8_t (*CTSS_DSPNodeHandler)(CTSS_DSPNode *node,
 
 typedef void (*CTSS_Mixdown_I16)(float **sources,
                                  int16_t *out,
-                                 uint32_t offset,
-                                 uint32_t len,
-                                 const uint8_t num,
-                                 const uint8_t stride);
+                                 size_t offset,
+                                 size_t len,
+                                 const size_t num,
+                                 const size_t stride);
 
 typedef void (*CTSS_Mixdown_F32)(float **sources,
                                  float *out,
-                                 uint32_t offset,
-                                 uint32_t len,
-                                 const uint8_t num,
-                                 const uint8_t stride);
+                                 size_t offset,
+                                 size_t len,
+                                 const size_t num,
+                                 const size_t stride);
 
 typedef void *CTSS_DSPState;
 
@@ -101,34 +101,34 @@ struct CTSS_Synth {
 const float ctss_notes[96];
 const float ctss_zero[AUDIO_BUFFER_SIZE];
 
-void ctss_init(CTSS_Synth *synth, uint8_t numStacks);
+void ctss_init(CTSS_Synth *synth, size_t numStacks);
 void ctss_update(CTSS_Synth *synth);
 void ctss_init_stack(CTSS_DSPStack *stack);
 void ctss_build_stack(CTSS_DSPStack *stack,
                       CTSS_DSPNode **nodes,
-                      uint8_t length);
+                      size_t length);
 void ctss_collect_stacks(CTSS_Synth *synth);
 int ctss_add_global_lfo(CTSS_Synth *synth, CTSS_DSPNode *lfo);
 
 void ctss_update_mix_mono_i16(CTSS_Synth *synth,
                               CTSS_Mixdown_I16 mixdown,
-                              uint32_t frames,
+                              size_t frames,
                               int16_t *out);
 void ctss_update_mix_stereo_i16(CTSS_Synth *synth,
                                 CTSS_Mixdown_I16 mixdown,
-                                uint32_t frames,
+                                size_t frames,
                                 int16_t *out);
 void ctss_update_mix_mono_f32(CTSS_Synth *synth,
                               CTSS_Mixdown_F32 mixdown,
-                              uint32_t frames,
+                              size_t frames,
                               float *out);
 void ctss_update_mix_stereo_f32(CTSS_Synth *synth,
                                 CTSS_Mixdown_F32 mixdown,
-                                uint32_t frames,
+                                size_t frames,
                                 float *out);
 
-void ctss_init_node(CTSS_DSPNode *node, char *id, uint8_t channels);
-CTSS_DSPNode *ctss_node(char *id, uint8_t channels);
+void ctss_init_node(CTSS_DSPNode *node, char *id, size_t channels);
+CTSS_DSPNode *ctss_node(char *id, size_t channels);
 void ctss_free_node_state(CTSS_DSPNode *node);
 
 void ctss_activate_stack(CTSS_DSPStack *stack);
@@ -142,65 +142,65 @@ void ctss_trace_node(CTSS_DSPNode *node);
 
 void ctss_mixdown_i16(float **in,
                       int16_t *out,
-                      uint32_t offset,
-                      uint32_t len,
-                      const uint8_t num,
-                      const uint8_t stride);
+                      size_t offset,
+                      size_t len,
+                      const size_t num,
+                      const size_t stride);
 void ctss_mixdown_i16_3(float **in,
                         int16_t *out,
-                        uint32_t offset,
-                        uint32_t len,
-                        const uint8_t num,
-                        const uint8_t stride);
+                        size_t offset,
+                        size_t len,
+                        const size_t num,
+                        const size_t stride);
 void ctss_mixdown_i16_4(float **in,
                         int16_t *out,
-                        uint32_t offset,
-                        uint32_t len,
-                        const uint8_t num,
-                        const uint8_t stride);
+                        size_t offset,
+                        size_t len,
+                        const size_t num,
+                        const size_t stride);
 void ctss_mixdown_i16_5(float **in,
                         int16_t *out,
-                        uint32_t offset,
-                        uint32_t len,
-                        const uint8_t num,
-                        const uint8_t stride);
+                        size_t offset,
+                        size_t len,
+                        const size_t num,
+                        const size_t stride);
 void ctss_mixdown_i16_6(float **in,
                         int16_t *out,
-                        uint32_t offset,
-                        uint32_t len,
-                        const uint8_t num,
-                        const uint8_t stride);
+                        size_t offset,
+                        size_t len,
+                        const size_t num,
+                        const size_t stride);
 
 void ctss_mixdown_f32(float **sources,
                       float *out,
-                      uint32_t offset,
-                      uint32_t len,
-                      const uint8_t num,
-                      const uint8_t stride);
+                      size_t offset,
+                      size_t len,
+                      const size_t num,
+                      const size_t stride);
 void ctss_mixdown_f32_3(float **sources,
                         float *out,
-                        uint32_t offset,
-                        uint32_t len,
-                        const uint8_t num,
-                        const uint8_t stride);
+                        size_t offset,
+                        size_t len,
+                        const size_t num,
+                        const size_t stride);
 void ctss_mixdown_f32_4(float **sources,
                         float *out,
-                        uint32_t offset,
-                        uint32_t len,
-                        const uint8_t num,
-                        const uint8_t stride);
+                        size_t offset,
+                        size_t len,
+                        const size_t num,
+                        const size_t stride);
 void ctss_mixdown_f32_5(float **sources,
                         float *out,
-                        uint32_t offset,
-                        uint32_t len,
-                        const uint8_t num,
-                        const uint8_t stride);
+                        size_t offset,
+                        size_t len,
+                        const size_t num,
+                        const size_t stride);
 void ctss_mixdown_f32_6(float **sources,
                         float *out,
-                        uint32_t offset,
-                        uint32_t len,
-                        const uint8_t num,
-                        const uint8_t stride);
+                        size_t offset,
+                        size_t len,
+                        const size_t num,
+                        const size_t stride);
 
 // http://www.kvraudio.com/forum/viewtopic.php?t=375517
 
