@@ -1,0 +1,95 @@
+.NOTPARALLEL:
+
+SRCDIR = src
+LIBDIR = lib
+BUILDDIR = obj
+SRC = $(wildcard $(SRCDIR)/*.c)
+
+INCLUDES += -I$(SRCDIR) -Iext
+CFLAGS += -std=c11 $(INCLUDES)
+
+ARCH := $(shell getconf LONG_BIT)
+
+ifndef platform
+	platform=x86_$(ARCH)
+endif
+
+ifndef config
+ifeq ($(findstring x86, $(platform)), x86)
+	config=release-sse
+else
+	config=release
+endif
+endif
+
+ifeq ($(findstring -sse, $(config)),-sse)
+	CFLAGS += -msse -msse2 -msse3 -msse4.1 -msse4.2
+	DEFINES += -DCT_FEATURE_SSE
+endif
+
+ifeq ($(findstring release, $(config)),release)
+	CFLAGS += -O3
+	DEFINES += -DNDEBUG
+else
+	CFLAGS += -g
+	DEFINES += -DDEBUG -DCT_FEATURE_CHECKS -DCT_FEATURE_CHECK_MEM -DCT_FEATURE_LOG
+endif
+
+OBJDIR = $(BUILDDIR)/$(platform)/$(config)
+OBJECTS = $(subst $(SRCDIR)/, $(OBJDIR)/, $(SRC:.c=.o))
+DEPS = $(OBJECTS:.o=.d)
+
+ifeq ($(findstring stm32,$(platform)),stm32)
+	TARGETDIR = $(LIBDIR)
+	TARGET = $(TARGETDIR)/libctss-$(platform)-$(config).a
+	CC = arm-none-eabi-gcc
+	AR = arm-none-eabi-ar
+ifeq ($(platform),stm32f4)
+	CFLAGS += -mthumb -mcpu=cortex-m4 -march=armv7e-m -mfloat-abi=hard -mfpu=fpv4-sp-d16 -ffast-math
+endif
+ifeq ($(platform),stm32f7)
+	CFLAGS += -mthumb -mcpu=cortex-m7 -mfloat-abi=hard -mfpu=fpv5-sp-d16 -ffast-math
+endif
+else
+	TARGETDIR = $(LIBDIR)
+	TARGET = $(TARGETDIR)/libctss-$(platform)-$(config).a
+endif
+
+LINKCMD = $(AR) -rcs "$@" $(OBJECTS)
+
+all: $(TARGETDIR) $(OBJDIR) $(TARGET)
+	@:
+
+.PHONY: trace clean
+
+trace:
+	@echo $(CC)
+	@echo $(AR)
+	@echo $(CFLAGS)
+	@echo $(TARGET)
+	@echo $(SRC)
+	@echo $(OBJECTS)
+	@echo $(DEPS)
+
+clean:
+	@echo Cleaning...
+	rm -rf $(TARGETDIR)
+	rm -rf $(OBJDIR)
+
+$(TARGET): $(OBJECTS) $(LDDEPS) $(RESOURCES)
+	@echo Linking $(TARGET)
+	$(LINKCMD)
+
+$(TARGETDIR):
+	@echo Creating $(TARGETDIR)
+	mkdir -p $(TARGETDIR)
+
+$(OBJDIR):
+	@echo Creating $(OBJDIR)
+	mkdir -p $(OBJDIR)
+
+$(OBJDIR)/%.o: $(SRCDIR)/%.c $(TARGETDIR)
+	@echo $(notdir $<)
+	$(CC) $(DEFINES) $(CFLAGS) -o "$@" -MMD -MP -MF "$(@:%.o=%.d)" -c "$<"
+
+-include $(DEPS)
