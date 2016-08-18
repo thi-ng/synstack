@@ -19,8 +19,8 @@ void ctss_free_node(CTSS_DSPNode *node) {
 
 void ctss_init(CTSS_Synth *synth, size_t numStacks) {
   memset((void *)ctss_zero, 0, sizeof(float) * AUDIO_BUFFER_SIZE);
-  synth->stacks = (CTSS_DSPStack *)calloc(numStacks, sizeof(CTSS_DSPStack));
-  synth->stackOutputs = (float **)calloc(numStacks, sizeof(float *));
+  synth->stacks       = calloc(numStacks, sizeof(CTSS_DSPStack));
+  synth->stackOutputs = calloc(numStacks, sizeof(float *));
   synth->numStacks    = numStacks;
   synth->numLFO       = 0;
 }
@@ -117,7 +117,7 @@ void ctss_update_mix_stereo_f32(CTSS_Synth *synth,
 }
 
 CTSS_DSPNode *ctss_node(char *id, size_t channels) {
-  CTSS_DSPNode *node = (CTSS_DSPNode *)calloc(1, sizeof(CTSS_DSPNode));
+  CTSS_DSPNode *node = calloc(1, sizeof(CTSS_DSPNode));
   ctss_init_node(node, id, channels);
   return node;
 }
@@ -130,7 +130,7 @@ void ctss_init_node(CTSS_DSPNode *node, char *id, size_t channels) {
   node->state = NULL;
   node->next  = NULL;
   node->flags = NODE_ACTIVE;
-  node->id    = (char *)calloc(strlen(id), sizeof(char));
+  node->id    = calloc(strlen(id) + 1, sizeof(char));
   strcpy(node->id, id);
 }
 

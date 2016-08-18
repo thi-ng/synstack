@@ -28,19 +28,8 @@
 #define HZ_TO_RAD(freq) ((freq)*TAU_RATE)
 #define RAD_TO_HZ(freq) ((freq)*INV_TAU_RATE)
 #define TIME_TO_FS_RATE(t) (1.0f / (SAMPLE_RATE * (t)))
-#define TRUNC_PHASE(phase)  \
-  if (phase >= CT_TAU) {    \
-    phase -= CT_TAU;        \
-  } else if (phase < 0.0) { \
-    phase += CT_TAU;        \
-  }
-
-#define TRUNC_NORM(x)    \
-  if (x >= 1.0f) {       \
-    x -= 1.0f;           \
-  } else if (x < 0.0f) { \
-    x += 1.0f;           \
-  }
+#define TRUNC_PHASE(phase) phase = ct_wrapf(phase, CT_TAU);
+#define TRUNC_NORM(phase) phase  = ct_wrapf(phase, 1.0f);
 
 #define CTSS_UNUSED(x) ((void)(x))
 

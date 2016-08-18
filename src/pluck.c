@@ -9,7 +9,7 @@ CTSS_DSPNode *ctss_osc_pluck(char *id,
                              float gain,
                              float dc) {
   CTSS_DSPNode *node = ctss_node(id, 1);
-  CTSS_PluckOsc *osc = (CTSS_PluckOsc *)calloc(1, sizeof(CTSS_PluckOsc));
+  CTSS_PluckOsc *osc = calloc(1, sizeof(CTSS_PluckOsc));
   osc->gain          = gain;
   osc->dcOffset      = dc;
   osc->variation     = 0.0f;
@@ -28,7 +28,7 @@ void ctss_reset_pluck(CTSS_DSPNode *node,
   if (freq < PLUCK_ACC_FREQ_LIMIT) {
     freq = PLUCK_ACC_FREQ_LIMIT;
   }
-  CTSS_PluckOsc *state = (CTSS_PluckOsc *)node->state;
+  CTSS_PluckOsc *state = node->state;
   memset((void *)state->acc, 0, sizeof(float) * state->len);
   state->phase   = 1;
   state->impulse = (int32_t)(impTime * SAMPLE_RATE) - 1;
@@ -43,7 +43,7 @@ uint8_t ctss_process_pluck(CTSS_DSPNode *node,
                            CTSS_Synth *synth) {
   CTSS_UNUSED(synth);
   CTSS_UNUSED(stack);
-  CTSS_PluckOsc *state = (CTSS_PluckOsc *)node->state;
+  CTSS_PluckOsc *state = node->state;
   float *acc           = state->acc;
   float *buf           = node->buf;
   int32_t impulse      = state->impulse;
@@ -51,7 +51,7 @@ uint8_t ctss_process_pluck(CTSS_DSPNode *node,
   const uint16_t alen  = state->len;
   const float ca       = state->smoothA;
   const float cb       = state->smoothB;
-  uint32_t len         = AUDIO_BUFFER_SIZE;
+  size_t len           = AUDIO_BUFFER_SIZE;
   while (len--) {
     float xn;
     if (impulse >= 0) {

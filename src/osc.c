@@ -8,7 +8,7 @@ CTSS_DSPNode *ctss_osc(char *id,
                        float gain,
                        float dc) {
   CTSS_DSPNode *node = ctss_node(id, 1);
-  CTSS_OscState *osc = (CTSS_OscState *)calloc(1, sizeof(CTSS_OscState));
+  CTSS_OscState *osc = calloc(1, sizeof(CTSS_OscState));
   osc->phase         = phase;
   osc->freq          = freq;
   osc->gain          = gain;
@@ -25,7 +25,7 @@ CTSS_DSPNode *ctss_osc(char *id,
 void ctss_set_osc_lfo(CTSS_DSPNode *node,
                       const CTSS_DSPNode *lfo,
                       float depth) {
-  CTSS_OscState *state = (CTSS_OscState *)node->state;
+  CTSS_OscState *state = node->state;
   state->lfo           = lfo->buf;
   state->lfoDepth      = depth;
 }
@@ -33,7 +33,7 @@ void ctss_set_osc_lfo(CTSS_DSPNode *node,
 void ctss_set_osc_env(CTSS_DSPNode *node,
                       const CTSS_DSPNode *env,
                       float depth) {
-  CTSS_OscState *state = (CTSS_OscState *)node->state;
+  CTSS_OscState *state = node->state;
   state->env           = env->buf;
   state->envDepth      = depth;
 }
@@ -47,13 +47,13 @@ uint8_t ctss_process_osc_sin(CTSS_DSPNode *node,
                              CTSS_Synth *synth) {
   CTSS_UNUSED(synth);
   CTSS_UNUSED(stack);
-  CTSS_OscState *state = (CTSS_OscState *)node->state;
+  CTSS_OscState *state = node->state;
   const float freq     = state->freq;
   const float *lfo     = state->lfo;
   // const float *env = state->env;
-  float phase  = state->phase;
-  float *buf   = node->buf;
-  uint32_t len = AUDIO_BUFFER_SIZE;
+  float phase = state->phase;
+  float *buf  = node->buf;
+  size_t len  = AUDIO_BUFFER_SIZE;
   while (len--) {
     phase +=
         freq + (*lfo++ * state->lfoDepth);  // + (*env++ * state->envDepth);
@@ -69,13 +69,13 @@ uint8_t ctss_process_osc_square(CTSS_DSPNode *node,
                                 CTSS_Synth *synth) {
   CTSS_UNUSED(synth);
   CTSS_UNUSED(stack);
-  CTSS_OscState *state = (CTSS_OscState *)node->state;
+  CTSS_OscState *state = node->state;
   const float freq     = state->freq;
   const float *lfo     = state->lfo;
   // const float *env = state->env;
-  float phase  = state->phase;
-  float *buf   = node->buf;
-  uint32_t len = AUDIO_BUFFER_SIZE;
+  float phase = state->phase;
+  float *buf  = node->buf;
+  size_t len  = AUDIO_BUFFER_SIZE;
   while (len--) {
     phase +=
         freq + (*lfo++ * state->lfoDepth);  // + (*env++ * state->envDepth);
@@ -91,13 +91,13 @@ uint8_t ctss_process_osc_saw(CTSS_DSPNode *node,
                              CTSS_Synth *synth) {
   CTSS_UNUSED(synth);
   CTSS_UNUSED(stack);
-  CTSS_OscState *state = (CTSS_OscState *)(node->state);
+  CTSS_OscState *state = node->state;
   const float freq     = state->freq;
   const float *lfo     = state->lfo;
   // const float *env = state->env;
-  float phase  = state->phase;
-  float *buf   = node->buf;
-  uint32_t len = AUDIO_BUFFER_SIZE;
+  float phase = state->phase;
+  float *buf  = node->buf;
+  size_t len  = AUDIO_BUFFER_SIZE;
   while (len--) {
     phase +=
         freq + (*lfo++ * state->lfoDepth);  // + (*env++ * state->envDepth);
@@ -113,13 +113,13 @@ uint8_t ctss_process_osc_tri(CTSS_DSPNode *node,
                              CTSS_Synth *synth) {
   CTSS_UNUSED(synth);
   CTSS_UNUSED(stack);
-  CTSS_OscState *state = (CTSS_OscState *)node->state;
+  CTSS_OscState *state = node->state;
   const float freq     = state->freq;
   const float *lfo     = state->lfo;
   // const float *env = state->env;
-  float phase  = state->phase;
-  float *buf   = node->buf;
-  uint32_t len = AUDIO_BUFFER_SIZE;
+  float phase = state->phase;
+  float *buf  = node->buf;
+  size_t len  = AUDIO_BUFFER_SIZE;
   while (len--) {
     phase +=
         freq + (*lfo++ * state->lfoDepth);  // + (*env++ * state->envDepth);
@@ -141,13 +141,13 @@ uint8_t ctss_process_osc_sawsin(CTSS_DSPNode *node,
                                 CTSS_Synth *synth) {
   CTSS_UNUSED(synth);
   CTSS_UNUSED(stack);
-  CTSS_OscState *state = (CTSS_OscState *)node->state;
+  CTSS_OscState *state = node->state;
   const float freq     = state->freq;
   const float *lfo     = state->lfo;
   // const float *env = state->env;
-  float phase  = state->phase;
-  float *buf   = node->buf;
-  uint32_t len = AUDIO_BUFFER_SIZE;
+  float phase = state->phase;
+  float *buf  = node->buf;
+  size_t len  = AUDIO_BUFFER_SIZE;
   while (len--) {
     phase +=
         freq + (*lfo++ * state->lfoDepth);  // + (*env++ * state->envDepth);
@@ -165,13 +165,13 @@ uint8_t ctss_process_osc_impulse(CTSS_DSPNode *node,
                                  CTSS_Synth *synth) {
   CTSS_UNUSED(synth);
   CTSS_UNUSED(stack);
-  CTSS_OscState *state = (CTSS_OscState *)node->state;
+  CTSS_OscState *state = node->state;
   const float freq     = state->freq;
   const float *lfo     = state->lfo;
   // const float *env = state->env;
-  float phase  = state->phase;
-  float *buf   = node->buf;
-  uint32_t len = AUDIO_BUFFER_SIZE;
+  float phase = state->phase;
+  float *buf  = node->buf;
+  size_t len  = AUDIO_BUFFER_SIZE;
   while (len--) {
     phase +=
         freq + (*lfo++ * state->lfoDepth);  // + (*env++ * state->envDepth);
@@ -198,13 +198,13 @@ uint8_t ctss_process_osc_pblep(CTSS_DSPNode *node,
                                CTSS_Synth *synth) {
   CTSS_UNUSED(synth);
   CTSS_UNUSED(stack);
-  CTSS_OscState *state   = (CTSS_OscState *)node->state;
+  CTSS_OscState *state   = node->state;
   const float freq       = state->freq * CT_INV_TAU;
   const float *lfo       = state->lfo;
   const CTSS_PblepOsc fn = state->fn;
   float phase            = state->phase;
   float *buf             = node->buf;
-  uint32_t len           = AUDIO_BUFFER_SIZE;
+  size_t len             = AUDIO_BUFFER_SIZE;
   while (len--) {
     phase += freq;
     // TRUNC_NORM(phase);

@@ -8,10 +8,9 @@ CTSS_DSPNode *ctss_filter_biquad(char *id,
                                  float freq,
                                  float dbGain,
                                  float bandwidth) {
-  CTSS_DSPNode *node = ctss_node(id, 1);
-  CTSS_BiquadState *state =
-      (CTSS_BiquadState *)calloc(1, sizeof(CTSS_BiquadState));
-  state->src = &src->buf[0];
+  CTSS_DSPNode *node      = ctss_node(id, 1);
+  CTSS_BiquadState *state = calloc(1, sizeof(CTSS_BiquadState));
+  state->src              = &src->buf[0];
   // state->lfo = (lfo != NULL ? &lfo->buf[0] : ctss_zero);
   state->type   = type;
   node->state   = state;
@@ -25,7 +24,7 @@ void ctss_calculate_biquad_coeff(CTSS_DSPNode *node,
                                  float freq,
                                  float dbGain,
                                  float bandwidth) {
-  CTSS_BiquadState *state = (CTSS_BiquadState *)node->state;
+  CTSS_BiquadState *state = node->state;
   float a0, a1, a2, b0, b1, b2;
 
   float A     = powf(10.0f, dbGain / 40.0f);
@@ -111,11 +110,11 @@ uint8_t ctss_process_biquad(CTSS_DSPNode *node,
                             CTSS_Synth *synth) {
   CTSS_UNUSED(synth);
   CTSS_UNUSED(stack);
-  CTSS_BiquadState *state = (CTSS_BiquadState *)node->state;
+  CTSS_BiquadState *state = node->state;
   const float *src        = state->src;
   float *buf              = node->buf;
   float *f                = state->f;
-  uint32_t len            = AUDIO_BUFFER_SIZE;
+  size_t len              = AUDIO_BUFFER_SIZE;
   while (len--) {
     float input = *src++;
     float x =

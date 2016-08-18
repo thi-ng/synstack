@@ -7,9 +7,9 @@ CTSS_DSPNode *ctss_adsr(char *id,
                         float releaseTime,
                         float attGain,
                         float sustainGain) {
-  sustainGain         = (sustainGain > 0.99f ? 0.99f : sustainGain);
+  sustainGain         = CT_MIN(sustainGain, 0.99f);
   CTSS_DSPNode *node  = ctss_node(id, 1);
-  CTSS_ADSRState *env = (CTSS_ADSRState *)calloc(1, sizeof(CTSS_ADSRState));
+  CTSS_ADSRState *env = calloc(1, sizeof(CTSS_ADSRState));
   env->lfo            = (float *)(lfo != NULL ? lfo->buf : ctss_zero);
   node->state         = env;
   node->handler       = ctss_process_adsr;
@@ -25,7 +25,7 @@ void ctss_configure_adsr(CTSS_DSPNode *node,
                          float releaseTime,
                          float attGain,
                          float sustainGain) {
-  CTSS_ADSRState *env = (CTSS_ADSRState *)(node->state);
+  CTSS_ADSRState *env = node->state;
   env->attackRate     = TIME_TO_FS_RATE(attTime) * attGain;
   env->decayRate      = TIME_TO_FS_RATE(decayTime) * (attGain - sustainGain);
   env->releaseRate    = TIME_TO_FS_RATE(releaseTime) * sustainGain;
@@ -34,7 +34,7 @@ void ctss_configure_adsr(CTSS_DSPNode *node,
 }
 
 void ctss_reset_adsr(CTSS_DSPNode *node) {
-  CTSS_ADSRState *state = (CTSS_ADSRState *)(node->state);
+  CTSS_ADSRState *state = node->state;
   state->phase          = ATTACK;
   state->currGain       = 0.0f;
 }
@@ -44,7 +44,7 @@ uint8_t ctss_process_adsr(CTSS_DSPNode *node,
                           CTSS_Synth *synth) {
   CTSS_UNUSED(synth);
   CTSS_UNUSED(stack);
-  CTSS_ADSRState *state = (CTSS_ADSRState *)(node->state);
+  CTSS_ADSRState *state = node->state;
   float *buf            = node->buf;
   float *envMod         = state->lfo;
   // CTSS_ADSRPhase prevPhase = state->phase;

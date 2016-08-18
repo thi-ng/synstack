@@ -1,5 +1,3 @@
-#include "synth.h"
-
 const float ctss_notes[] = {
     // c1
     32.70319566f, 34.64782887f, 36.70809599f, 38.89087297f, 41.20344461f,

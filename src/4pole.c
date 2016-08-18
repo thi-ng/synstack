@@ -6,14 +6,13 @@ CTSS_DSPNode *ctss_filter_4pole(char *id,
                                 float freq,
                                 float reso,
                                 float coeff) {
-  CTSS_DSPNode *node = ctss_node(id, 1);
-  CTSS_Filter4PoleState *state =
-      (CTSS_Filter4PoleState *)calloc(1, sizeof(CTSS_Filter4PoleState));
-  state->src         = &src->buf[0];
-  state->lfo         = (lfo != NULL ? &lfo->buf[0] : NULL);
-  state->cutoffFreq  = freq;
-  state->cutoffCoeff = coeff;
-  state->resonance   = reso;
+  CTSS_DSPNode *node           = ctss_node(id, 1);
+  CTSS_Filter4PoleState *state = calloc(1, sizeof(CTSS_Filter4PoleState));
+  state->src                   = &src->buf[0];
+  state->lfo                   = (lfo != NULL ? &lfo->buf[0] : NULL);
+  state->cutoffFreq            = freq;
+  state->cutoffCoeff           = coeff;
+  state->resonance             = reso;
   for (size_t i = 0; i < 4; i++) {
     state->in[i] = state->out[i] = 0.0f;
   }
@@ -27,19 +26,19 @@ uint8_t ctss_process_4pole(CTSS_DSPNode *node,
                            CTSS_Synth *synth) {
   CTSS_UNUSED(synth);
   CTSS_UNUSED(stack);
-  CTSS_Filter4PoleState *state = (CTSS_Filter4PoleState *)(node->state);
+  CTSS_Filter4PoleState *state = node->state;
   float *src                   = state->src;
   float *lfo                   = state->lfo;
   float *buf                   = &node->buf[0];
-  float f0     = state->cutoffCoeff * state->cutoffFreq * INV_NYQUIST_FREQ;
-  uint32_t len = AUDIO_BUFFER_SIZE;
+  float f0   = state->cutoffCoeff * state->cutoffFreq * INV_NYQUIST_FREQ;
+  size_t len = AUDIO_BUFFER_SIZE;
   while (len--) {
     float f = f0;  // * (*lfo++);
     if (f > 1.0f) {
       f = 1.0f;
     }
     float ff  = f * f;
-    float sig = (*src++);
+    float sig = *src++;
     sig -= state->out[3] * state->resonance * (1.0f - 0.15f * ff);
     sig *= 0.35013f * ff * ff;
 

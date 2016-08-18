@@ -9,7 +9,7 @@ CTSS_DSPNode *ctss_filter_iir(char *id,
                               float cutoff,
                               float reso) {
   CTSS_DSPNode *node   = ctss_node(id, 1);
-  CTSS_IIRState *state = (CTSS_IIRState *)calloc(1, sizeof(CTSS_IIRState));
+  CTSS_IIRState *state = calloc(1, sizeof(CTSS_IIRState));
   state->src           = &src->buf[0];
   state->lfo           = (lfo != NULL ? &lfo->buf[0] : ctss_zero);
   state->type          = type;
@@ -20,7 +20,7 @@ CTSS_DSPNode *ctss_filter_iir(char *id,
 }
 
 void ctss_calculate_iir_coeff(CTSS_DSPNode *node, float cutoff, float reso) {
-  CTSS_IIRState *state = (CTSS_IIRState *)node->state;
+  CTSS_IIRState *state = node->state;
   state->cutoff        = cutoff;
   state->resonance     = reso;
   state->freq =
@@ -39,14 +39,14 @@ uint8_t ctss_process_iir(CTSS_DSPNode *node,
                          CTSS_Synth *synth) {
   CTSS_UNUSED(synth);
   CTSS_UNUSED(stack);
-  CTSS_IIRState *state = (CTSS_IIRState *)node->state;
+  CTSS_IIRState *state = node->state;
   const float *src     = state->src;
   const float *lfo     = state->lfo;
   float *buf           = node->buf;
   float *f             = state->f;
   float damp           = state->damp;
   float freq           = state->freq;
-  uint32_t len         = AUDIO_BUFFER_SIZE;
+  size_t len           = AUDIO_BUFFER_SIZE;
   while (len--) {
     float input = *src++;
 
