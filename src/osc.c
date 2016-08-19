@@ -8,7 +8,7 @@ CTSS_DSPNode *ctss_osc(char *id,
                        float gain,
                        float dc) {
   CTSS_DSPNode *node = ctss_node(id, 1);
-  CTSS_OscState *osc = calloc(1, sizeof(CTSS_OscState));
+  CTSS_OscState *osc = CTSS_CALLOC(1, sizeof(CTSS_OscState));
   osc->phase         = phase;
   osc->freq          = freq;
   osc->gain          = gain;

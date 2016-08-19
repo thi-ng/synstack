@@ -9,7 +9,7 @@ CTSS_DSPNode *ctss_filter_biquad(char *id,
                                  float dbGain,
                                  float bandwidth) {
   CTSS_DSPNode *node      = ctss_node(id, 1);
-  CTSS_BiquadState *state = calloc(1, sizeof(CTSS_BiquadState));
+  CTSS_BiquadState *state = CTSS_CALLOC(1, sizeof(CTSS_BiquadState));
   state->src              = &src->buf[0];
   // state->lfo = (lfo != NULL ? &lfo->buf[0] : ctss_zero);
   state->type   = type;

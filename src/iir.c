@@ -9,7 +9,7 @@ CTSS_DSPNode *ctss_filter_iir(char *id,
                               float cutoff,
                               float reso) {
   CTSS_DSPNode *node   = ctss_node(id, 1);
-  CTSS_IIRState *state = calloc(1, sizeof(CTSS_IIRState));
+  CTSS_IIRState *state = CTSS_CALLOC(1, sizeof(CTSS_IIRState));
   state->src           = &src->buf[0];
   state->lfo           = (lfo != NULL ? &lfo->buf[0] : ctss_zero);
   state->type          = type;

@@ -6,7 +6,7 @@ CTSS_DSPNode *ctss_panning(char *id,
                            CTSS_DSPNode *lfo,
                            float pos) {
   CTSS_DSPNode *node       = ctss_node(id, 2);
-  CTSS_PanningState *state = calloc(1, sizeof(CTSS_PanningState));
+  CTSS_PanningState *state = CTSS_CALLOC(1, sizeof(CTSS_PanningState));
   state->src               = src->buf;
   state->lfo               = (lfo != NULL ? lfo->buf : ctss_zero);
   state->pos               = pos;

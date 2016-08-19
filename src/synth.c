@@ -6,21 +6,21 @@
 void ctss_free_node_state(CTSS_DSPNode *node) {
   if (node->state != NULL) {
     CT_DEBUG("free node state...");
-    free(node->state);
-    free(node->id);
+    CTSS_FREE(node->state);
+    CTSS_FREE(node->id);
   }
 }
 
 void ctss_free_node(CTSS_DSPNode *node) {
   CT_DEBUG("free node: %s", node->id);
   ctss_free_node_state(node);
-  free(node);
+  CTSS_FREE(node);
 }
 
 void ctss_init(CTSS_Synth *synth, size_t numStacks) {
   memset((void *)ctss_zero, 0, sizeof(float) * AUDIO_BUFFER_SIZE);
-  synth->stacks       = calloc(numStacks, sizeof(CTSS_DSPStack));
-  synth->stackOutputs = calloc(numStacks, sizeof(float *));
+  synth->stacks       = CTSS_CALLOC(numStacks, sizeof(CTSS_DSPStack));
+  synth->stackOutputs = CTSS_CALLOC(numStacks, sizeof(float *));
   synth->numStacks    = numStacks;
   synth->numLFO       = 0;
 }
@@ -117,20 +117,20 @@ void ctss_update_mix_stereo_f32(CTSS_Synth *synth,
 }
 
 CTSS_DSPNode *ctss_node(char *id, size_t channels) {
-  CTSS_DSPNode *node = calloc(1, sizeof(CTSS_DSPNode));
+  CTSS_DSPNode *node = CTSS_CALLOC(1, sizeof(CTSS_DSPNode));
   ctss_init_node(node, id, channels);
   return node;
 }
 
 void ctss_init_node(CTSS_DSPNode *node, char *id, size_t channels) {
   if (node->buf != NULL) {
-    free(node->buf);
+    CTSS_FREE(node->buf);
   }
-  node->buf   = calloc(AUDIO_BUFFER_SIZE * channels, sizeof(float));
+  node->buf   = CTSS_CALLOC(AUDIO_BUFFER_SIZE * channels, sizeof(float));
   node->state = NULL;
   node->next  = NULL;
   node->flags = NODE_ACTIVE;
-  node->id    = calloc(strlen(id) + 1, sizeof(char));
+  node->id    = CTSS_CALLOC(strlen(id) + 1, sizeof(char));
   strcpy(node->id, id);
 }
 

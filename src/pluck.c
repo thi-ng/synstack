@@ -9,7 +9,7 @@ CTSS_DSPNode *ctss_osc_pluck(char *id,
                              float gain,
                              float dc) {
   CTSS_DSPNode *node = ctss_node(id, 1);
-  CTSS_PluckOsc *osc = calloc(1, sizeof(CTSS_PluckOsc));
+  CTSS_PluckOsc *osc = CTSS_CALLOC(1, sizeof(CTSS_PluckOsc));
   osc->gain          = gain;
   osc->dcOffset      = dc;
   osc->variation     = 0.0f;

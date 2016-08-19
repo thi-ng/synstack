@@ -29,7 +29,7 @@ CTSS_DSPNode *ctss_filter_formant(char *id,
                                   CTSS_Formant formant,
                                   CTSS_DSPNode *src) {
   CTSS_DSPNode *node       = ctss_node(id, 1);
-  CTSS_FormantState *state = calloc(1, sizeof(CTSS_FormantState));
+  CTSS_FormantState *state = CTSS_CALLOC(1, sizeof(CTSS_FormantState));
   state->src               = src->buf;
   state->type              = formant;
   node->state              = state;
@@ -165,7 +165,7 @@ CTSS_DSPNode *ctss_osc_formant(char *id,
                                float dc,
                                float smooth) {
   CTSS_DSPNode *node   = ctss_node(id, 1);
-  CTSS_FormantOsc *osc = calloc(1, sizeof(CTSS_FormantOsc));
+  CTSS_FormantOsc *osc = CTSS_CALLOC(1, sizeof(CTSS_FormantOsc));
   osc->phase           = -1.0f;
   osc->freq            = freq;
   osc->gain            = gain;

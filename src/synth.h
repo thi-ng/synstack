@@ -4,6 +4,20 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "ct-head/math.h"
+#include "ct-head/vargs.h"
+
+#ifndef CTSS_CALLOC
+#define CTSS_CALLOC calloc
+#endif
+
+#ifndef CTSS_FREE
+#define CTSS_FREE free
+#endif
+
+#define DECLX(sym, ...) extern CT_CAT(sym, )(__VA_ARGS__);
+
+DECLX(void *CTSS_CALLOC, size_t, size_t);
+DECLX(void CTSS_FREE, void *);
 
 #ifndef AUDIO_BUFFER_SIZE
 #define AUDIO_BUFFER_SIZE 32

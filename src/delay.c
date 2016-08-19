@@ -6,8 +6,8 @@ CTSS_DSPNode *ctss_delay(char *id,
                          float feedback,
                          uint8_t channels) {
   CTSS_DSPNode *node     = ctss_node(id, channels);
-  CTSS_DelayState *state = calloc(1, sizeof(CTSS_DelayState));
-  state->delayLine       = (float *)calloc(len * channels, sizeof(float));
+  CTSS_DelayState *state = CTSS_CALLOC(1, sizeof(CTSS_DelayState));
+  state->delayLine       = CTSS_CALLOC(len * channels, sizeof(float));
   state->src             = src->buf;
   state->len             = len * channels;
   state->feedback        = feedback;

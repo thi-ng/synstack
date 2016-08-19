@@ -9,7 +9,7 @@ CTSS_DSPNode *ctss_adsr(char *id,
                         float sustainGain) {
   sustainGain         = CT_MIN(sustainGain, 0.99f);
   CTSS_DSPNode *node  = ctss_node(id, 1);
-  CTSS_ADSRState *env = calloc(1, sizeof(CTSS_ADSRState));
+  CTSS_ADSRState *env = CTSS_CALLOC(1, sizeof(CTSS_ADSRState));
   env->lfo            = (float *)(lfo != NULL ? lfo->buf : ctss_zero);
   node->state         = env;
   node->handler       = ctss_process_adsr;

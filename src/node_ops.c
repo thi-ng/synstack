@@ -7,7 +7,7 @@ CTSS_DSPNode *ctss_op2(char *id,
                        CTSS_DSPNode *b,
                        CTSS_DSPNodeHandler fn) {
   CTSS_DSPNode *node       = ctss_node(id, 1);
-  CTSS_NodeOp2State *state = calloc(1, sizeof(CTSS_NodeOp2State));
+  CTSS_NodeOp2State *state = CTSS_CALLOC(1, sizeof(CTSS_NodeOp2State));
   state->bufA              = a->buf;
   state->bufB              = b->buf;
   node->state              = state;
@@ -20,7 +20,7 @@ CTSS_DSPNode *ctss_op2_const(char *id,
                              float af,
                              CTSS_DSPNodeHandler fn) {
   CTSS_DSPNode *node        = ctss_node(id, 1);
-  CTSS_NodeOp2CState *state = calloc(1, sizeof(CTSS_NodeOp2CState));
+  CTSS_NodeOp2CState *state = CTSS_CALLOC(1, sizeof(CTSS_NodeOp2CState));
   state->bufA               = a->buf;
   state->af                 = af;
   node->state               = state;
@@ -35,7 +35,7 @@ CTSS_DSPNode *ctss_op4_const(char *id,
                              float bf,
                              CTSS_DSPNodeHandler fn) {
   CTSS_DSPNode *node        = ctss_node(id, 1);
-  CTSS_NodeOp4CState *state = calloc(1, sizeof(CTSS_NodeOp4CState));
+  CTSS_NodeOp4CState *state = CTSS_CALLOC(1, sizeof(CTSS_NodeOp4CState));
   state->bufA               = a->buf;
   state->af                 = af;
   state->bufB               = b->buf;
@@ -52,7 +52,7 @@ CTSS_DSPNode *ctss_op4(char *id,
                        CTSS_DSPNode *d,
                        CTSS_DSPNodeHandler fn) {
   CTSS_DSPNode *node       = ctss_node(id, 1);
-  CTSS_NodeOp4State *state = calloc(1, sizeof(CTSS_NodeOp4State));
+  CTSS_NodeOp4State *state = CTSS_CALLOC(1, sizeof(CTSS_NodeOp4State));
   state->bufA              = a->buf;
   state->bufB              = b->buf;
   state->bufC              = c->buf;
@@ -64,7 +64,7 @@ CTSS_DSPNode *ctss_op4(char *id,
 
 CTSS_DSPNode *ctss_copy(char *id, CTSS_DSPNode *src, CTSS_DSPNode *dest) {
   CTSS_DSPNode *node       = ctss_node(id, 1);
-  CTSS_NodeOp2State *state = calloc(1, sizeof(CTSS_NodeOp2State));
+  CTSS_NodeOp2State *state = CTSS_CALLOC(1, sizeof(CTSS_NodeOp2State));
   state->bufA              = src->buf;
   state->bufB              = dest->buf;
   node->state              = state;

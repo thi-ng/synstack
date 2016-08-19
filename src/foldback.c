@@ -6,7 +6,7 @@ CTSS_DSPNode *ctss_foldback(char *id,
                             float threshold,
                             float amp) {
   CTSS_DSPNode *node        = ctss_node(id, 1);
-  CTSS_FoldbackState *state = calloc(1, sizeof(CTSS_FoldbackState));
+  CTSS_FoldbackState *state = CTSS_CALLOC(1, sizeof(CTSS_FoldbackState));
   state->src                = src->buf;
   state->threshold          = threshold;
   state->amp                = amp;

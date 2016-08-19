@@ -7,7 +7,7 @@ CTSS_DSPNode *ctss_filter_4pole(char *id,
                                 float reso,
                                 float coeff) {
   CTSS_DSPNode *node           = ctss_node(id, 1);
-  CTSS_Filter4PoleState *state = calloc(1, sizeof(CTSS_Filter4PoleState));
+  CTSS_Filter4PoleState *state = CTSS_CALLOC(1, sizeof(CTSS_Filter4PoleState));
   state->src                   = &src->buf[0];
   state->lfo                   = (lfo != NULL ? &lfo->buf[0] : NULL);
   state->cutoffFreq            = freq;
