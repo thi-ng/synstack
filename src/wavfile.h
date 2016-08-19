@@ -3,6 +3,22 @@
 #include <stdint.h>
 #include <stdio.h>
 
+typedef struct {
+  char riffTag[4];
+  uint32_t riffLength;
+  char waveTag[4];
+  char formatTag[4];
+  uint32_t formatLength;
+  uint16_t audioFormat;
+  uint16_t numChannels;
+  uint32_t sampleRate;
+  uint32_t byteRate;
+  uint16_t blockAlign;
+  uint16_t bits;
+  char dataTag[4];
+  uint32_t dataLength;
+} CTSS_WavHeader;
+
 uint8_t ctss_wavfile_save(const char *path,
                           const int16_t *data,
                           uint32_t rate,
