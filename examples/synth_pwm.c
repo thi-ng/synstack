@@ -37,10 +37,10 @@ int main(int argc, char *argv[]) {
 
 static void init_voice(CTSS_Synth *synth, CTSS_DSPStack *stack, float freq) {
   ctss_init_stack(stack);
-  CTSS_DSPNode *env =
-      ctss_adsr("env", synth->lfo[0], 0.01f, 0.05f, 0.3f, 1.0f, 0.15f);
-  CTSS_DSPNode *env2 =
-      ctss_adsr("env2", synth->lfo[0], 0.005f, 0.1f, 0.02f, 1.0f, 0.99f);
+  CTSS_DSPNode *env  = ctss_adsr("env", synth->lfo[0]);
+  CTSS_DSPNode *env2 = ctss_adsr("env2", synth->lfo[0]);
+  ctss_configure_adsr(env, 0.01f, 0.05f, 0.3f, 1.0f, 0.15f, false);
+  ctss_configure_adsr(env2, 0.005f, 0.1f, 0.02f, 1.0f, 0.99f, false);
   CTSS_DSPNode *lfo = ctss_osc("lfoPWM", ctss_process_osc_sin, 0.0f,
                                HZ_TO_RAD(3.33f), 0.45f, 0.5f);
   CTSS_DSPNode *osc1 =

@@ -41,8 +41,8 @@ int main(int argc, char *argv[]) {
 
 static void init_voice(CTSS_Synth *synth, CTSS_DSPStack *stack, float freq) {
   ctss_init_stack(stack);
-  CTSS_DSPNode *env =
-      ctss_adsr("env", synth->lfo[0], 0.005f, 0.1f, 0.3f, 1.0f, 0.5f);
+  CTSS_DSPNode *env = ctss_adsr("env", synth->lfo[0]);
+  ctss_configure_adsr(env, 0.005f, 0.1f, 0.3f, 1.0f, 0.5f, false);
   CTSS_DSPNode *osc1 =
       ctss_osc("osc1", ctss_process_osc_spiral, 0.0f, freq, 0.15f, 0.0f);
   ctss_set_osc_lfo(osc1, synth->lfo[2], 1.0f);

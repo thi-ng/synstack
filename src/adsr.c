@@ -1,21 +1,11 @@
 #include "adsr.h"
 
-CTSS_DSPNode *ctss_adsr(char *id,
-                        CTSS_DSPNode *lfo,
-                        float attTime,
-                        float decayTime,
-                        float releaseTime,
-                        float attGain,
-                        float sustainGain) {
-  sustainGain         = CT_MIN(sustainGain, 0.99f);
+CTSS_DSPNode *ctss_adsr(char *id, CTSS_DSPNode *lfo) {
   CTSS_DSPNode *node  = ctss_node(id, 1);
   CTSS_ADSRState *env = CTSS_CALLOC(1, sizeof(CTSS_ADSRState));
   env->lfo            = (float *)(lfo != NULL ? lfo->buf : ctss_zero);
   node->state         = env;
   node->handler       = ctss_process_adsr;
-  ctss_configure_adsr(node, attTime, decayTime, releaseTime, attGain,
-                      sustainGain);
-  ctss_reset_adsr(node);
   return node;
 }
 
@@ -24,19 +14,30 @@ void ctss_configure_adsr(CTSS_DSPNode *node,
                          float decayTime,
                          float releaseTime,
                          float attGain,
-                         float sustainGain) {
+                         float sustainGain,
+                         bool useSustain) {
+  sustainGain         = ct_minf(sustainGain, attGain * 0.99f);
   CTSS_ADSRState *env = node->state;
   env->attackRate     = TIME_TO_FS_RATE(attTime) * attGain;
   env->decayRate      = TIME_TO_FS_RATE(decayTime) * (attGain - sustainGain);
   env->releaseRate    = TIME_TO_FS_RATE(releaseTime) * sustainGain;
   env->attackGain     = attGain;
   env->sustainGain    = sustainGain;
+  env->useSustain     = useSustain;
+  ctss_reset_adsr(node);
 }
 
 void ctss_reset_adsr(CTSS_DSPNode *node) {
   CTSS_ADSRState *state = node->state;
-  state->phase          = ATTACK;
+  state->phase          = CTSS_ATTACK;
   state->currGain       = 0.0f;
+}
+
+void ctss_release_adsr(CTSS_DSPNode *node) {
+  CTSS_ADSRState *state = node->state;
+  if (state->phase != CTSS_IDLE) {
+    state->phase = CTSS_RELEASE;
+  }
 }
 
 uint8_t ctss_process_adsr(CTSS_DSPNode *node,
@@ -52,28 +53,28 @@ uint8_t ctss_process_adsr(CTSS_DSPNode *node,
   if (envMod != NULL) {
     while (len--) {
       switch (state->phase) {
-        case ATTACK:
+        case CTSS_ATTACK:
           state->currGain += state->attackRate * (*envMod);
           if (state->currGain >= state->attackGain) {
             state->currGain = state->attackGain;
-            state->phase    = DECAY;
+            state->phase    = CTSS_DECAY;
           }
           break;
-        case DECAY:
+        case CTSS_DECAY:
           state->currGain -= state->decayRate * (*envMod);
           if (state->currGain <= state->sustainGain) {
             state->currGain = state->sustainGain;
-            state->phase    = RELEASE;
+            state->phase    = state->useSustain ? CTSS_SUSTAIN : CTSS_RELEASE;
           }
           break;
-        case SUSTAIN:
-          // TODO
+        case CTSS_SUSTAIN:
+          state->currGain = state->sustainGain;
           break;
-        case RELEASE:
+        case CTSS_RELEASE:
           state->currGain -= state->releaseRate;
           if (state->currGain <= 0.0f) {
             state->currGain = 0.0f;
-            state->phase    = IDLE;
+            state->phase    = CTSS_IDLE;
           }
           break;
         default:
@@ -85,28 +86,28 @@ uint8_t ctss_process_adsr(CTSS_DSPNode *node,
   } else {
     while (len--) {
       switch (state->phase) {
-        case ATTACK:
+        case CTSS_ATTACK:
           state->currGain += state->attackRate;
           if (state->currGain >= state->attackGain) {
             state->currGain = state->attackGain;
-            state->phase    = DECAY;
+            state->phase    = CTSS_DECAY;
           }
           break;
-        case DECAY:
+        case CTSS_DECAY:
           state->currGain -= state->decayRate;
           if (state->currGain <= state->sustainGain) {
             state->currGain = state->sustainGain;
-            state->phase    = RELEASE;
+            state->phase    = state->useSustain ? CTSS_SUSTAIN : CTSS_RELEASE;
           }
           break;
-        case SUSTAIN:
-          // TODO
+        case CTSS_SUSTAIN:
+          state->currGain = state->sustainGain;
           break;
-        case RELEASE:
+        case CTSS_RELEASE:
           state->currGain -= state->releaseRate;
           if (state->currGain <= 0.0f) {
             state->currGain = 0.0f;
-            state->phase    = IDLE;
+            state->phase    = CTSS_IDLE;
           }
           break;
         default:
@@ -115,6 +116,6 @@ uint8_t ctss_process_adsr(CTSS_DSPNode *node,
       *buf++ = state->currGain;
     }
   }
-  return 0;  //((prevPhase == IDLE) && (state->phase == IDLE)) ? STACK_ACTIVE :
+  return 0;  //((prevPhase == CTSS_IDLE) && (state->phase == CTSS_IDLE)) ? STACK_ACTIVE :
              // 0;
 }
