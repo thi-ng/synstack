@@ -1,3 +1,4 @@
 #!/bin/bash
-find . \( -name \*.c -or -name \*.cpp -or -name \*.cc -or -name \*.h \) | \
-    xargs -n12 -P4 clang-format -i
+find . \( -name \*.c -or -name \*.cpp -or -name \*.cc -or -name \*.h \) \
+     -not -path "./ext/*" \
+    | xargs -n12 -P4 clang-format -i
