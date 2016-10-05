@@ -1,4 +1,4 @@
 [submodule "ext/ct-head"]
 	path = ext/ct-head
 	url = https://github.com/thi-ng/ct-head
-	banch = master
+	branch = master
