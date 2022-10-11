@@ -5,6 +5,7 @@ Softsynth engine for tiny & not-so-tiny devices...
 ** Contents                                                        :toc_3_gh:
  - [[#thingsynstack][thi.ng/synstack]]
      - [[#overview][Overview]]
+         - [[#demos][Demos]]
          - [[#node-dag-synth-engine][Node DAG synth engine]]
          - [[#forth-like-vm-based-synth][Forth-like VM based synth]]
      - [[#build-instructions][Build instructions]]
@@ -18,12 +19,14 @@ Softsynth engine for tiny & not-so-tiny devices...
 
 [[./assets/thing-synstack.jpg]]
 
-Check out: [[http://soundcloud.com/forthcharlie/sets/stm32f4][Demo set with 40+ tracks on Soundcloud]]!
+*** Demos
 
-Full project release forthcoming...
+- [[http://soundcloud.com/forthcharlie/sets/stm32f4][Demo set with 40+ tracks on Soundcloud]]
+- [[https://www.youtube.com/watch?v=41FKE3PYjnE][STM32F746 MIDI synth (live performance, 2016-01-31, Youtube)]]
+- [[https://www.youtube.com/watch?v=3lL-ZxyrHiE][STM32F746 synth (live recording, 2016-01-28, Youtube)]]
 
-Please visit [[https://hackaday.io/project/9374-stm32f4f7-synstack][project log @ Hackaday]] for interim updates, including a
-PDF with more project details. Thanks!
+Please visit [[https://hackaday.io/project/9374-stm32f4f7-synstack][project log @ Hackaday]]
+for interim updates, including a PDF with more project details. Thanks!
 
 This repo currently contains two different experimental & easily
 extensible implementations of a modular soft synth engine, both
@@ -40,7 +43,7 @@ The sub-directories contain:
 
 - =src= - an earlier (2nd or 3rd) iteration of the CTSS synth engine,
   using block based operators & node DAG (directed acyclic graph):
-  - 10 oscillators (incl. formant & karplus-strong, polyBlep antialiasing)
+  - 10 oscillator types (incl. formant & karplus-strong, polyBlep antialiasing)
   - flexibile LFO setup (global LFO & arbitrary per voice)
   - filters (biquad, IIR LP/HP/BP, formant)
   - ADSR
@@ -54,6 +57,11 @@ The sub-directories contain:
 *** Forth-like VM based synth
 
 (not embracing ANS Forth standard here):
+
+The supplied Forth-like VM & core vocab is general purpose, is configurable
+(e.g. support for floating point & automatic inlining) and can also be used
+independently, outside this project. In fact, the synth DSL related aspects
+are implemented as add-ons and can easily be removed.
 
 - =src_vm= - actual stack VM, interpreter & compiler w/ basic
   inlining, REPL, core Forth dictionary & basic synth operators (still
