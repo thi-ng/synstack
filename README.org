@@ -22,8 +22,8 @@ Softsynth engine for tiny & not-so-tiny devices...
 *** Demos
 
 - [[http://soundcloud.com/forthcharlie/sets/stm32f4][Demo set with 40+ tracks on Soundcloud]]
-- [[https://www.youtube.com/watch?v=41FKE3PYjnE][STM32F746 MIDI synth (live performance, 2016-01-31, Youtube)]]
-- [[https://www.youtube.com/watch?v=3lL-ZxyrHiE][STM32F746 synth (live recording, 2016-01-28, Youtube)]]
+- [[https://makertube.net/w/6tYcSLrJdPfev8HNFNHVPj][STM32F746 MIDI synth (live performance, 2016-01-31, Youtube)]]
+- [[https://makertube.net/w/mbeSF3y2rs2xnx1Yv5fL5v][STM32F746 synth (live recording, 2016-01-28, Youtube)]]
 
 Please visit [[https://hackaday.io/project/9374-stm32f4f7-synstack][project log @ Hackaday]]
 for interim updates, including a PDF with more project details. Thanks!
