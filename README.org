@@ -89,10 +89,17 @@ git clone --recursive https://github.com/thi-ng/synstack
 
 cd synstack
 
+# regenerate make files (or skip if using supplied ones)
 premake5 gmake
 
+# if using homebrew (for portaudio)
+export LDFLAGS="-L/opt/homebrew/lib"
+export CPPFLAGS="-I/opt/homebrew/include"
+
+# build lib & examples
 make -f ctss_old.make config=release_sse
 
+# build Forth VM & REPL
 make -f ctss_vm.make config=release_sse
 #+END_SRC
 
